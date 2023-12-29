@@ -33,6 +33,29 @@ EF(t1.address=0)
 CTLSPEC
 EF(t2.address=1)
 
+-- verifica se i tag terminano l'esecuzione
+CTLSPEC
+EF(t1.state=single)
+
+CTLSPEC
+EF(t2.state=single)
+
+-- verifico che il reader termini l'esecuzione
+CTLSPEC
+EF((r.state=single) & (r.address=-1))
+
+CTLSPEC
+EF((r.continue=FALSE) & (t1.continue=FALSE) & (t2.continue=FALSE))
+
+CTLSPEC
+EF(r.state=single)
+
+CTLSPEC
+EF(r.address=-1)
+
+CTLSPEC
+EF(r.state=end)
+
 MODULE reader(t1,t2)
 
 VAR
@@ -73,8 +96,9 @@ ASSIGN
           (k=0) & (state=receive) : idle;
           (k=2) & (state=receive) : collision;
           (k=1) & (state=receive) : single;
-          (state=idle) | (state=collision) | (state=single) : transmit;
           (state=single) & (address=-1) : end;
+          (state=idle) | (state=collision) | ((state=single) & !(address=-1)) : transmit;
+          -- (state=single) & (address=-1) : end;
           TRUE : state;
         esac;
 
