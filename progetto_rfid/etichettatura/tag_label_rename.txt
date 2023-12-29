@@ -1,0 +1,20 @@
+l : ---
+l0: RECEIVE
+l1: ---
+l2: TRANSMIT
+l3: FEEDBACK
+l4: COLLISION
+l5: RANDOMBIT
+l6: ADDRESS
+l7: SINGLE
+l8: END
+l':
+
+---
+L'algoritmo viene utilizzato dai tag che svolgono le seguenti operazioni:
+- RECEIVE  : ricevono la sonda inviata dal reader.
+- TRANSMIT : trasmettono un segnale di risposta alla sonda.
+- FEEDBACK : recuperano il feedback per capire se c'è stata una collisione.
+- RANDOMBIT: lanciano la moneta (processo di randomizzazione).
+- ADDRESS  : si identificano con un proprio indirizzo.
+- END      : terminano l'esecuzione (sono stati individuati dal reader).

@@ -1,0 +1,33 @@
+l  : ---
+l0 : TRANSMIT
+l2 : RECEIVE
+l1 : ---
+l4 : IDLE
+l3 : ---
+l5 : ---
+l7 : COLLISION1
+l8 : COLLISION2
+l6 : ---
+l9 : END1
+l10: ---
+l12: SINGLE1
+l13: SINGLE1
+l11: ---
+l14: END2
+l15: RIGHT
+l' :
+
+----
+L'algoritmo viene utilizzato dal reader che svolge le seguenti operazioni:
+
+- TRANSMIT  : invia la sonda a tutti i tag. Ogni sonda inviata contiene un  
+              indirizzo.
+- RECEIVE   : riceve le risposte dai tag che hanno ricevuto la sonda.
+- IDLE      : invia un feedback in caso di idle dei tag. 
+- COLLISION : esplora l'albero verso il basso.
+- END       : termina l'esecuzione.
+- SINGLE    : risale l'albero.
+- RIGHT     : cerca nella parte destra del sotto-albero (dove sono presenti
+              i bit 1).
+            
+            

@@ -1,0 +1,120 @@
+
+P = m: P0 | P1 m':
+
+Reader: P0
+
+  MODULE I
+
+    VAR
+    B : end == no
+
+    LABEL 
+    Reader = while(B) Reader => Reader_L = while(B) l0: Reader_L
+
+  MODULE II
+
+    VAR 
+    Px : Pa;Pb
+    Py : Pc;Pd
+    Pa : trasmit_probe_with_address_a()
+    Pb : tag_reply = receive_tag_reply()
+    Pc : if (tag_reply == IDLE)..
+    Pd : if (tag_reply == COLLISION)..else..
+    Reader : Reader_L
+
+    LABEL
+    Reader = Px;Py => Reader_L = Px_L ; l1: Py_L
+
+  MODULE III
+
+    VAR
+    Px : Px_L
+    Py : Py_L
+
+    LABEL
+    Px = Pa;Pb => Px_L = Pa_L ; l2: Pb_L
+    Py = Pc;Pd => Py_L = Pc_L ; l3: Pd_L
+
+  MODULE IV
+
+    VAR
+    B  : tag_reply == IDLE 
+    Pc : Pc_L
+    P1 : transmit_feedback()
+
+    LABEL
+    Pc = if(B) P1 => Pc_L = if(B) l4: P1_L
+
+  MODULE V
+
+    VAR
+    B  : tag_reply == COLLISION 
+    Pd : Pd_L
+    P1 : if (L == 0)..else..
+    P2 : if (a == empty)..else..
+
+    LABEL
+    Pd = if(B) P1 else P2 => Pd_L = if(B) l5: P1_L else l6: P2_L
+
+  MODULE VI
+
+    VAR
+    B  : L == 0
+    P1 : P1_L
+    S1 : a = (0)
+    S2 : a = (a1,a2...aL0)
+
+    LABEL
+    P1 = if(B) S1 else S2 => P1_L = if(B) l7: S1_L else l8: S2_L
+
+  MODULE VII
+
+    VAR
+    B  : a == empty
+    P2 : P2_L
+    S1 : end = yes
+    S2 : Pk;Pj
+
+    LABEL
+    P2 = if(B) S1 else S2 => P2_L = if(B) l9: S1_L else l10: S2_L
+
+  MODULE VIII
+
+    VAR
+    S2 = S2_L
+
+    LABEL
+    S2 = Pk;Pj => S2_L = Pk_L ; l11: Pj_L
+
+  MODULE IX
+
+    VAR
+    B  : aL == 1
+    P1 : delete aL
+    P2 : L = L -1
+
+    LABEL
+    Pk = while(B) Pk => Pk_L = while(B) l12: Pk_L
+
+  MODULE X
+
+    VAR
+    Pk : Pk_L
+    Pk : P1;P2
+
+    LABEL
+    Pk = P1;P2 => Pk_L = P1_L ; l13: P2_L
+
+  MODULE XI
+
+    VAR
+    B  : L == 0
+    P1 : end = yes
+    P2 : aL = 1
+
+    LABEL
+    Pj = if(B) P1 else P2 => Pj_L = if(B) l14: P1_L else l15: P2_L
+
+
+
+     

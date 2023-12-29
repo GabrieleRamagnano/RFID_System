@@ -1,0 +1,26 @@
+l :  while(end == no)
+   
+l0:     trasmit_probe_with_address_a();
+
+l2:     tag_reply = receive_tag_reply();
+
+l1:     if (tag_reply == IDLE)
+l4:       transmit_feedback();
+
+l3:     if (tag_reply == COLLISION) 
+l5:       if (L == 0)
+l7:         a = (0)
+          else
+l8:         a = (a1,a2...aL0)
+        else 
+l6:       if (a == empty) 
+l9:         end = yes;
+          else 
+l10:        while (aL == 1)
+l12:          delete aL;
+l13:          L = L - 1;
+l11:        if (L == 0)
+l14:          end = yes;
+            else
+l15:          aL = 1;
+l' :

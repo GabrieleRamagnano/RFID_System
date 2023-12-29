@@ -1,0 +1,83 @@
+P = m: P0 | P1 m':
+
+Tag: P0
+
+  MODULE I
+
+    VAR
+    B : end == no
+    
+    LABEL
+    Tag = while(B) Tag => Tag_L = while(B) l0: Tag_L
+
+MODULE II
+
+    VAR 
+    Px : receive pr
+    Py : if (a == pr)..
+    Tag : Tag_L
+
+    LABEL
+    Tag = Px;Py => Tag_L = Px_L ; l1: Py_L
+
+MODULE III
+
+    VAR 
+    B  : a == pr
+    P1 : transmit
+    P2 : get feedback at the end of the slot
+    Pa : P1;P2
+    Pb : if(collision)..else..
+    Pz : Pa;Pb
+    Py : Py_L
+
+    LABEL
+    Py = if(B) Pz  => Py_L = if(B) l2: Pz_L
+
+MODULE IV
+
+    VAR 
+    Pz : Pz_L
+
+    LABEL
+    Pz = Pa;Pb => Pz_L = Pa_L ; l4: Pb_L
+
+MODULE V
+
+    VAR 
+    Pa : Pa_L
+
+    LABEL
+    Pa = P1;P2 => Pa_L = P1_L ; l3: P2_L
+
+MODULE VI
+
+    VAR
+    B  : collision
+    P1 : set b = randombit
+    P2 : set a = (a1...aLb)
+    Pk : P1;P2
+    Pj : if(single)..
+    Pb : Pb_L
+
+    LABEL
+    Pb = if(B) Pk else Pj => Pb_L = if(B) l5: Pk_L else l7: Pj_L
+
+MODULE VII
+
+    VAR 
+    Pk : Pk_L
+
+    LABEL
+    Pk = P1;P2 => Pk_L = P1_L ; l6: P2_L
+
+MODULE VIII
+
+    VAR 
+    B  : single
+    P3 : set end = yes
+    Pj : Pj_L
+
+    LABEL
+    Pj = if(B) P3  => Pj_L = if(B) l8: P3_L
+

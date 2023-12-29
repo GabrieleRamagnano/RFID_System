@@ -1,0 +1,142 @@
+Tag
+
+    MODULE I
+
+        VAR
+        B      : end == no
+        Tag    : Tag_L
+        &      : and
+        ^      : or
+        !      : not
+
+        LABEL
+        Tag_L = while(B) l0: Tag_L
+
+        TRADUZIONE
+        C(l, while(B) l0: Tag, l'):
+        - pc = l & pc' = l0 & B & same(V)
+        - pc = l & pc' = l' & !B & same(V)
+        C(l0, Tag, l)
+
+    MODULE II
+
+        VAR
+        Px : Px_L
+        Py : Py_L
+
+        LABEL
+        Tag_L = Px_L; l1: Py_L
+    
+        TRADUZIONE
+        C(l0, Px; l1: Py, l):
+        C(l0, Px, l1) ^ C(l1, Py, l)
+        C(l0, Px, l1) i.e.
+        C(l0, receive pr, l1):
+        pc = l0 & pc' = l1 &  receive pr & same(V)
+
+        NOTA
+        Per eseguire "receive pr" il tag deve avere un riferimento
+        al reader... 
+
+    MODULE III
+
+        VAR
+        B  : a == pr
+        Pz = Pz_L
+
+        LABEL
+        Py_L = if(B) l2: P1_L
+
+        TRADUZIONE
+        C(l1, if(B) l2: Pz, l):
+        - pc = l1 & pc' = l2 & B & same(V)
+        - pc = l1 & pc' = l & !B & same(V)
+        C(l2, Pz, l) 
+
+    MODULE IV
+
+        VAR
+        Pa : Pa_L
+        Pb : Pb_L
+
+        LABEL
+        Pz_L = Pa_L ; l4: Pb_L
+    
+        TRADUZIONE
+        C(l2, Pa; l4: Pb, l):
+        C(l2, Pa, l4) ^ C(l4, Pb, l)
+        
+
+    MODULE V
+
+        VAR
+        P1 : P1_L
+        P2 : P2_L
+
+        LABEL
+        Pa_L = P1_L ; l3: P2_L
+    
+        TRADUZIONE
+        C(l2, P1; l3: P2, l4):
+        C(l2, P1, l3) ^ C(l3, P2, l4)
+        C(l2, P1, l3) i.e.
+        C(l2, transmit, l3):
+        pc = l2 & pc' = l3 &  transmit & same(V)
+        C(l3, P2, l4) i.e.
+        C(l3, get_feedback(), l4):
+        pc = l3 & pc' = l4 &  get_feedback()  & same(V)
+
+    MODULE VI
+
+        VAR
+        B  : collision
+        Pk : Pk_L
+        Pj : Pj_L
+
+        LABEL
+        Pb_L = if(B) l5: Pk_L else l7: Pj_L
+
+        TRADUZIONE
+        C(l4, if(B) l5: Pk else l7: Pj, l):
+        - pc = l4 & pc' = l5 & B & same(V)
+        - pc = l4 & pc' = l7 & !B & same(V)
+        C(l5, Pk, l)
+        C(l7, Pj, l)
+
+    MODULE VII
+
+        VAR
+        P1 = P1_L
+        P2 = P2_L
+
+        LABEL
+        Pk_L = P1_L ; l6: P2_L
+
+        TRADUZIONE
+        C(l5, P1; l6: P2, l):
+        C(l5, P1, l6) ^ C(l6, P2, l)
+        C(l5, P1, l6) i.e.
+        C(l5, set b = randombit, l6):
+        pc = l5 & pc' = l6 &  set b = randombit & same(V{b})
+        C(l6, P2, l) i.e.
+        C(l6, set a = (a1...aLb), l):
+        pc = l6 & pc' = l &  set a = (a1...aLb)  & same(V{a})
+
+    MODULE
+
+        VAR
+        B  : single
+        P3 : P3_L
+
+        LABEL
+        Pj_L = if(B) l8: P3_L
+
+        TRADUZIONE
+        C(l7, if(B) l8: P3, l):
+        - pc = l7 & pc' = l8 & B & same(V)
+        - pc = l7 & pc' = l & !B & same(V)
+        C(l8, P3, l) i.e.
+        C(l8, set end = yes, l):
+        - pc = l8 & pc' = l & set end = yes & same(V{end})
+
+

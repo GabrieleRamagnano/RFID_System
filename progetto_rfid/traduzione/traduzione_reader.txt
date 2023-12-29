@@ -1,0 +1,205 @@
+Reader
+
+    MODULE I
+
+        VAR
+        B      : end == no
+        Reader : Reader_L
+        &      : and
+        ^      : or
+        !      : not
+
+        TRADUZIONE
+        C(l, while(B) l0: Reader, l'):
+        - pc = l & pc' = l0 & B & same(V)
+        - pc = l & pc' = l' & !B & same(V)
+        C(l0, Reader, l)
+
+    MODULE II
+
+        VAR
+        Px     : Px_L
+        Py     : Py_L
+
+        LABEL
+        Reader_L = Px_L; l1: Py_L
+    
+        TRADUZIONE
+        C(l0, Px; l1: Py, l):
+        C(l0, Px, l1) ^ C(l1, Py, l)
+    
+    MODULE III
+
+        VAR
+        Pa : Pa_L
+        Pb : Pb_L
+        Pc : Pc_L
+        Pd : Pd_L
+
+        LABEL
+        Px_L = Pa_L ; l2: Pb_L
+        Py_L = Pc_L ; l3: Pd_L
+
+        TRADUZIONE
+        C(l0, Pa; l2: Pb, l1):
+        C(l0, Pa, l2) ^ C(l2, Pb, l1)
+        C(l0, Pa, l2) i.e.
+        C(l0, trasmit_probe(), l2):
+        pc = l0 & pc' = l2 &  trasmit_probe() & same(V)
+        C(l2, Pb, l1) i.e.
+        C(l2, receive(), l1):
+        pc = l2 & pc' = l1 &  receive() & same(V)
+
+        C(l1, Pc; l3: Pd, l):
+        C(l1, Pc, l3) ^ C(l3, Pd, l)
+
+    MODULE IV
+
+        VAR
+        P1 = P1_L
+        B  : tag_reply == IDLE
+
+        LABEL
+        Pc_L = if(B) l4: P1_L
+
+        TRADUZIONE
+        C(l1, if(B) l4: P1, l3):
+        - pc = l1 & pc' = l4 & B & same(V)
+        - pc = l1 & pc' = l3 & !B & same(V)
+        C(l4, P1, l3) i.e.
+        C(l4, transmit_feedback(), l3):
+        pc = l4 & pc' = l3 &  transmit_feedback() & same(V\{stato dei tag})
+
+        NOTA
+        Ipotizziamo che la funzione transmit_feedback() possa cambiare
+        lo stato dei tag...
+        
+    MODULE V
+
+        VAR
+        B  : tag_reply == COLLISION 
+        P1 : P1_L
+        P2 : P2_L
+
+        LABEL
+        Pd_L = if(B) l5: P1_L else l6: P2_L
+
+        TRADUZIONE
+        C(l3, if(B) l5: P1 else l6: P2, l'):
+        - pc = l3 & pc' = l5 & B & same(V)
+        - pc = l3 & pc' = l6 & !B & same(V)
+        C(l5, P1, l')
+        C(l6, P2, l')
+
+    MODULE VI
+
+        VAR
+        B  : L == 0
+        S1 : S1_L
+        S2 : S2_L
+
+        LABEL
+        P1_L = if(B) l7: S1_L else l8: S2_L
+
+        TRADUZIONE
+        C(l5, if(B) l7: S1 else l8: S2, l):
+        - pc = l5 & pc' = l7 & B & same(V)
+        - pc = l5 & pc' = l8 & !B & same(V)
+        C(l7, S1, l) i.e.
+        C(l7, a = (0), l):
+        pc = l7 & pc' = l &  a' = (0) & same(V\{a})
+        C(l8, S2, l) i.e.
+        C(l8, a = (a1,a2...aL0), l):
+        pc = l8 & pc' = l &  a' = (a1,a2...aL0) & same(V\{a})
+
+    MODULE VII
+
+        VAR
+        B  : a == empty
+        S1 : S1_L
+        S2 : S2_L
+
+        LABEL
+        P2_L = if(B) l9: S1_L else l10: S2_L
+
+        TRADUZIONE
+        C(l6, if(B) l9: S1 else l10: S2, l):
+        - pc = l6 & pc' = l9 & B & same(V)
+        - pc = l6 & pc' = l10 & !B & same(V)
+        C(l9, S1, l) i.e.
+        C(l9, end = yes, l):
+        pc = l6 & pc' = l &  end' = yes & same(V\{end})
+        C(l10, S2, l)
+
+    MODULE VIII
+
+        VAR
+        Pk : Pk_L
+        Pj : Pj_L
+
+        LABEL
+        S2_L = Pk_L ; l11: Pj_L
+
+        TRADUZIONE
+        C(l10, Pk; l11: Pj, l):
+        C(l10, Pk, l11) ^ C(l11, Pj, l)
+
+
+    MODULE IX
+
+        VAR 
+        B  : aL == 1
+        Pk : Pk_L
+
+        LABEL
+        Pk_L = while(B) l12: Pk_L
+
+        TRADUZIONE
+        C(l10, while(B) l12: Pk, l11):
+        - pc = 10 & pc' = l12 & B & same(V)
+        - pc = 10 & pc' = l1 & !B & same(V)
+        C(l12, Pk, l10)
+
+    MODULE X
+
+        VAR
+        P1 : P1_L
+        P2 : P2_L
+
+        LABEL
+        Pk_L = P1_L; l13: P2_L
+
+        TRADUZIONE
+        C(l12, P1; l13: P2, l10):
+        C(l12, P1, l13) ^ C(l13, P2, l10)
+        C(l12, P1, l13) i.e.
+        C(l12, delete aL, l13):
+        pc = l7 & pc' = l &  delete aL & same(V\{a})
+        ...
+
+        NOTA
+        L'istruzione "P2 : L = L -1" è ancora dubbia...
+
+    MODULE XI
+
+        VAR
+        B  : L == 0
+        P1 : P1_L
+        P2 : P2_L
+
+        LABEL
+        Pj_L = if(B) l14: P1_L else l15: P2_L
+
+        TRADUZIONE
+        C(l11, if(B) l14: P1 else l15: P2, l):
+        - pc = l11 & pc' = l14 & B & same(V)
+        - pc = l11 & pc' = l15 & !B & same(V)
+        C(l14, P1, l) i.e.
+        C(l14, end = yes, l):
+        pc = l14 & pc' = l & end' = yes & same(V\{end})
+        C(l15, P2, l) i.e.
+        C(l15, aL = 1, l):
+        pc = l15 & pc' = l &  aL' = 1 & same(V\{a})
+
+
+

@@ -1,0 +1,15 @@
+a = empty;
+end = no;
+
+l : while (end == no)
+l0:   receive pr;
+l1:   if (a == pr)
+l2:     transmit;
+l3:     get feedback at the end of the slot;
+l4:     if (collision)
+l5:       set b = randombit;
+l6:       set a = (a1...aLb);
+        else 
+l7:     if (single)
+l8:       set end = yes;
+l':
