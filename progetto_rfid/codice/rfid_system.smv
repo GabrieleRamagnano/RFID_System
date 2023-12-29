@@ -44,7 +44,7 @@ ASSIGN
           (continue=TRUE) & (state=transmit) : receive;
           (k=0) & (state=receive) : idle;
           (k=2) & (state=receive) : collision;
-          --(K=1) & (state=receive) : single;
+          (k=1) & (state=receive) : single;
           (state=idle) | (state=collision) | (state=single) : transmit;
           (state=single) & (address=-1) : end;
           TRUE : state;
