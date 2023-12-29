@@ -5,6 +5,13 @@ VAR
  t1: tag(r,0);
  t2: tag(r,1);
 
+-- raggiungibilità
+CTLSPEC
+EF (k=1) & (state=receive)
+
+-- raggiungibilità
+EF (k=0) & (state=receive)
+
 MODULE reader(t1,t2)
 
 VAR
