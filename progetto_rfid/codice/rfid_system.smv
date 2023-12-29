@@ -23,7 +23,7 @@ EF((r.state=single) & ((t1.state=transmit) | (t2.state=transmit)))
 
 -- raggiugibilità
 CTLSPEC
-EF((t1.state=transmit) & (t2.state=end))
+EF((t1.state=transmit) & !(t2.state=transmit))
 
 -- raggiungibilità
 CTLSPEC
@@ -45,8 +45,8 @@ VAR
 -- collision detection
 DEFINE 
   k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
-       ((t1.state=transmit) & (t2.state=end))        ? 1 :
-       ((t1.state=end) & (t2.state=transmit))        ? 1 : 0;
+       ((t1.state=transmit) & !(t2.state=transmit))  ? 1 :
+       (!(t1.state=transmit) & (t2.state=transmit))  ? 1 : 0;
 
 ASSIGN
 
