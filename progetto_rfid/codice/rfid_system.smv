@@ -2,8 +2,8 @@ MODULE main
 
 VAR
  r : reader(t1,t2);
- t1: tag(r);
- t2: tag(r);
+ t1: tag(r,0);
+ t2: tag(r,1);
 
 MODULE reader(t1,t2)
 
@@ -42,8 +42,14 @@ ASSIGN
           TRUE : state;
         esac;
 
+-- collision detection
+DEFINE 
+  k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
+       ((t1.state=transmit) & (t2.state=end) )       ? 1 :
+       ((t1.state=end) & (t2.state=transmit) )       ? 1 : 0;
 
-MODULE tag(r)
+
+MODULE tag(r,a)
 
 VAR
  state   : {receive,transmit,collision,single,end};
@@ -61,7 +67,7 @@ ASSIGN
     init(address) := -1;
     next(address) :=
         case
-          (state=collision) : 0;
+          (state=collision) : a;
           TRUE : address;
         esac; 
 
@@ -78,11 +84,7 @@ ASSIGN
 
 
 
--- collision detection
-DEFINE 
-  k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
-       ((t1.state=transmit) & (t2.state=end) )       ? 1 :
-       ((t1.state=end) & (t2.state=transmit) )       ? 1 : 0;
+
     
 
 
