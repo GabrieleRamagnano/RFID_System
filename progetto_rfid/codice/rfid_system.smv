@@ -7,10 +7,31 @@ VAR
 
 -- raggiungibilità
 CTLSPEC
-EF (k=1) & (state=receive)
+EF((r.k=1) & (r.state=receive))
 
 -- raggiungibilità
-EF (k=0) & (state=receive)
+CTLSPEC
+EF((r.k=0) & (r.state=receive))
+
+-- raggiungibilità
+CTLSPEC
+EF((r.k=2) & (r.state=receive))
+
+-- raggiungibilità
+CTLSPEC
+EF((r.state=single) & ((t1.state=transmit) | (t2.state=transmit)))
+
+-- raggiugibilità
+CTLSPEC
+EF((t1.state=transmit) & (t2.state=end))
+
+-- raggiungibilità
+CTLSPEC
+EF(t1.address=0)
+
+-- raggiungibilità
+CTLSPEC
+EF(t2.address=1)
 
 MODULE reader(t1,t2)
 
@@ -24,8 +45,8 @@ VAR
 -- collision detection
 DEFINE 
   k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
-       ((t1.state=transmit) & (t2.state=end) )       ? 1 :
-       ((t1.state=end) & (t2.state=transmit) )       ? 1 : 0;
+       ((t1.state=transmit) & (t2.state=end))        ? 1 :
+       ((t1.state=end) & (t2.state=transmit))        ? 1 : 0;
 
 ASSIGN
 
