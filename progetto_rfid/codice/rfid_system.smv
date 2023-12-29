@@ -10,13 +10,16 @@ MODULE reader(t1,t2)
 VAR
 
  state   : {transmit,receive,idle,collision,single,end};
- address : integer;
+ address : {-1,0,1};
  continue: boolean;
 
 ASSIGN
 
     init(continue) := TRUE;
-    next(continue) := state=end : FALSE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+        esac;
 
     init(address) := -1;
     next(address) :=
@@ -44,13 +47,16 @@ MODULE tag(r)
 
 VAR
  state   : {receive,transmit,collision,single,end};
- address : integer;
+ address : {-1,0,1};
  continue: boolean;
 
 ASSIGN
 
     init(continue) := TRUE;
-    next(continue) := state=end : FALSE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+        esac;
 
     init(address) := -1;
     next(address) :=
@@ -73,9 +79,10 @@ ASSIGN
 
 
 -- collision detection
-DEFINE k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
-            ((t1.state=transmit) & (t2.state=end) )       ? 1 :
-            ((t1.state=end) & (t2.state=transmit) )       ? 1 : 0;
+DEFINE 
+k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
+     ((t1.state=transmit) & (t2.state=end) )       ? 1 :
+     ((t1.state=end) & (t2.state=transmit) )       ? 1 : 0;
     
 
 
