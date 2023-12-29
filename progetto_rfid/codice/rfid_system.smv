@@ -13,12 +13,20 @@ VAR
  address : {-1,0,1};
  continue: boolean;
 
+
+-- collision detection
+DEFINE 
+  k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
+       ((t1.state=transmit) & (t2.state=end) )       ? 1 :
+       ((t1.state=end) & (t2.state=transmit) )       ? 1 : 0;
+
 ASSIGN
 
     init(continue) := TRUE;
     next(continue) := 
         case
            state=end : FALSE;
+           TRUE : continue;
         esac;
 
     init(address) := -1;
@@ -34,19 +42,14 @@ ASSIGN
     next(state) :=
         case
           (continue=TRUE) & (state=transmit) : receive;
-          (k = 0) & (state=receive) : idle;
-          (k = 2) & (state=receive) : collision;
-          (K = 1) & (state=receive) : single;
+          (k=0) & (state=receive) : idle;
+          (k=2) & (state=receive) : collision;
+          --(K=1) & (state=receive) : single;
           (state=idle) | (state=collision) | (state=single) : transmit;
           (state=single) & (address=-1) : end;
           TRUE : state;
         esac;
 
--- collision detection
-DEFINE 
-  k := ((t1.state=transmit) & (t2.state=transmit) )  ? 2 :
-       ((t1.state=transmit) & (t2.state=end) )       ? 1 :
-       ((t1.state=end) & (t2.state=transmit) )       ? 1 : 0;
 
 
 MODULE tag(r,a)
@@ -56,12 +59,14 @@ VAR
  address : {-1,0,1};
  continue: boolean;
 
+
 ASSIGN
 
     init(continue) := TRUE;
     next(continue) := 
         case
            state=end : FALSE;
+           TRUE : continue;
         esac;
 
     init(address) := -1;
@@ -75,13 +80,12 @@ ASSIGN
     next(state) :=
         case
            (r.state=receive) & (r.address=address) & (state=receive): transmit;
-           (k = 2) & (state=transmit) : collision;
-           (k = 1) & (state=transmit) : single;
+           (r.state=collision) & (state=transmit) : collision;
+           (r.state=single) & (state=transmit) : single;
            (state=collision) : receive;
            (state=single) : end;
            TRUE : state;
         esac;
-
 
 
 
