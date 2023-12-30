@@ -5,21 +5,30 @@ VAR
  t1: tag(r,0);
  t2: tag(r,1);
 
--- verifichiamo se tutti gli stati di reader
+-- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
 CTLSPEC
-EF(r.state=transmit)
+EF(t1.state=transmit)
 CTLSPEC
-EF(r.state=receive)
+EF(t1.state=receive)
 CTLSPEC
-EF(r.state=idle)
+EF(t1.state=collision)
 CTLSPEC
-EF(r.state=collision)
+EF(t1.state=single)
 CTLSPEC
-EF(r.state=single)
+EF(t1.state=end)
+
 CTLSPEC
-EF(r.state=end)
+EF(t2.state=transmit)
+CTLSPEC
+EF(t2.state=receive)
+CTLSPEC
+EF(t2.state=collision)
+CTLSPEC
+EF(t2.state=single)
+CTLSPEC
+EF(t2.state=end)
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
@@ -28,8 +37,8 @@ EF(r.state=end)
 --AG(EF(r.state=transmit))
 --CTLSPEC
 --AG(EF(r.state=receive))
-CTLSPEC
-AG(EF(r.state=idle))
+--CTLSPEC
+--AG(EF(r.state=idle))
 --CTLSPEC
 --AG(EF(r.state=collision))
 --CTLSPEC
