@@ -49,10 +49,10 @@ EF(t2.state=end)
 MODULE reader(t1,t2)
 
 VAR
-
- state   : {transmit,receive,idle,collision,single,end};
- address : {-1,0,1};
  continue: boolean;
+ address : {-1,0,1};
+ state   : {transmit,receive,idle,collision,single,end};
+ 
 
 
 -- collision detection
@@ -96,11 +96,11 @@ ASSIGN
 MODULE tag(r,a)
 
 VAR
- state   : {receive,transmit,collision,single,end};
- address : {-1,0,1};
  continue: boolean;
-
-
+ address : {-1,0,1};
+ state   : {receive,transmit,collision,single,end};
+ 
+ 
 ASSIGN
 
     init(continue) := TRUE;

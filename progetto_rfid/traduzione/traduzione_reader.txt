@@ -85,11 +85,11 @@ Reader
         Pd_L = if(B) l5: P1_L else l6: P2_L
 
         TRADUZIONE
-        C(l3, if(B) l5: P1 else l6: P2, l'):
+        C(l3, if(B) l5: P1 else l6: P2, l):
         - pc = l3 & pc' = l5 & B & same(V)
         - pc = l3 & pc' = l6 & !B & same(V)
-        C(l5, P1, l')
-        C(l6, P2, l')
+        C(l5, P1, l)
+        C(l6, P2, l)
 
     MODULE VI
 
@@ -126,9 +126,9 @@ Reader
         C(l6, if(B) l9: S1 else l10: S2, l):
         - pc = l6 & pc' = l9 & B & same(V)
         - pc = l6 & pc' = l10 & !B & same(V)
-        C(l9, S1, l) i.e.
-        C(l9, end = yes, l):
-        pc = l6 & pc' = l &  end' = yes & same(V\{end})
+        C(l9, S1, l') i.e.
+        C(l9, end = yes, l'):
+        pc = l6 & pc' = l' &  end' = yes & same(V\{end})
         C(l10, S2, l)
 
     MODULE VIII
@@ -194,9 +194,9 @@ Reader
         C(l11, if(B) l14: P1 else l15: P2, l):
         - pc = l11 & pc' = l14 & B & same(V)
         - pc = l11 & pc' = l15 & !B & same(V)
-        C(l14, P1, l) i.e.
-        C(l14, end = yes, l):
-        pc = l14 & pc' = l & end' = yes & same(V\{end})
+        C(l14, P1, l') i.e.
+        C(l14, end = yes, l'):
+        pc = l14 & pc' = l' & end' = yes & same(V\{end})
         C(l15, P2, l) i.e.
         C(l15, aL = 1, l):
         pc = l15 & pc' = l &  aL' = 1 & same(V\{a})
