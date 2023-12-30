@@ -5,54 +5,19 @@ VAR
  t1: tag(r,0);
  t2: tag(r,1);
 
--- raggiungibilità
-CTLSPEC
-EF((r.k=1) & (r.state=receive))
-
--- raggiungibilità
-CTLSPEC
-EF((r.k=0) & (r.state=receive))
-
--- raggiungibilità
-CTLSPEC
-EF((r.k=2) & (r.state=receive))
-
--- raggiungibilità
-CTLSPEC
-EF((r.state=single) & ((t1.state=transmit) | (t2.state=transmit)))
-
--- raggiugibilità
-CTLSPEC
-EF((t1.state=transmit) & !(t2.state=transmit))
-
--- raggiungibilità
-CTLSPEC
-EF(t1.address=0)
-
--- raggiungibilità
-CTLSPEC
-EF(t2.address=1)
-
--- verifica se i tag terminano l'esecuzione
-CTLSPEC
-EF(t1.state=single)
+-- verifichiamo se tutti gli stati di reader
+-- sono raggiungibili
 
 CTLSPEC
-EF(t2.state=single)
-
--- verifico che il reader termini l'esecuzione
+EF(r.state=transmit)
 CTLSPEC
-EF((r.state=single) & (r.address=-1))
-
+EF(r.state=receive)
 CTLSPEC
-EF((r.continue=FALSE) & (t1.continue=FALSE) & (t2.continue=FALSE))
-
+EF(r.state=idle)
+CTLSPEC
+EF(r.state=collision)
 CTLSPEC
 EF(r.state=single)
-
-CTLSPEC
-EF(r.address=-1)
-
 CTLSPEC
 EF(r.state=end)
 
