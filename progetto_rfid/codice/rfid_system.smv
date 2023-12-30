@@ -28,8 +28,8 @@ EF(r.state=end)
 --AG(EF(r.state=transmit))
 --CTLSPEC
 --AG(EF(r.state=receive))
---CTLSPEC
---AG(EF(r.state=idle))
+CTLSPEC
+AG(EF(r.state=idle))
 --CTLSPEC
 --AG(EF(r.state=collision))
 --CTLSPEC
@@ -65,8 +65,8 @@ ASSIGN
     next(address) :=
         case
          (state=collision) : 0;
-         (state=single) & (address=1) : -1;
          (state=single) & (address=0) : 1;
+         (state=single) & (address=1) : -1;
          TRUE : address;
         esac;
 
@@ -78,7 +78,7 @@ ASSIGN
           (k=2) & ((state=receive) | (state=idle))          : collision;
           (k=1) & ((state=receive) | (state=idle))          : single;
           (state=idle) | (state=collision) | (state=single) : transmit;
-          (state=single) & (address=-1)                     : end;
+          (address=-1) & ((state=idle) | (state=single))    : end;
           TRUE : state;
         esac;
 
