@@ -37,8 +37,8 @@ EF(t2.state=end)
 --AG(EF(r.state=transmit))
 --CTLSPEC
 --AG(EF(r.state=receive))
---CTLSPEC
---AG(EF(r.state=idle))
+CTLSPEC
+AG(EF(r.state=idle))
 --CTLSPEC
 --AG(EF(r.state=collision))
 --CTLSPEC
