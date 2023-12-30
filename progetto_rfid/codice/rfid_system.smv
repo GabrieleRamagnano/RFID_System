@@ -21,6 +21,22 @@ EF(r.state=single)
 CTLSPEC
 EF(r.state=end)
 
+-- verifichiamo se il reader rimane in deadlock
+-- in una particolare configurazione
+
+CTLSPEC
+AG(EF(r.state=transmit))
+CTLSPEC
+AG(EF(r.state=receive))
+CTLSPEC
+AG(EF(r.state=idle))
+CTLSPEC
+AG(EF(r.state=collision))
+CTLSPEC
+AG(EF(r.state=single))
+CTLSPEC
+AG(EF(r.state=end))
+
 MODULE reader(t1,t2)
 
 VAR
