@@ -77,8 +77,8 @@ ASSIGN
           (k=0) & (state=receive)                           : idle;
           (k=2) & ((state=receive) | (state=idle))          : collision;
           (k=1) & ((state=receive) | (state=idle))          : single;
-          (state=idle) | (state=collision) | (state=single) : transmit;
           (address=-1) & ((state=idle) | (state=single))    : end;
+          (state=idle) | (state=collision) | (state=single) : transmit;
           TRUE : state;
         esac;
 
