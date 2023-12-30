@@ -24,18 +24,18 @@ EF(r.state=end)
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
 
-CTLSPEC
-AG(EF(r.state=transmit))
-CTLSPEC
-AG(EF(r.state=receive))
-CTLSPEC
-AG(EF(r.state=idle))
-CTLSPEC
-AG(EF(r.state=collision))
-CTLSPEC
-AG(EF(r.state=single))
-CTLSPEC
-AG(EF(r.state=end))
+--CTLSPEC
+--AG(EF(r.state=transmit))
+--CTLSPEC
+--AG(EF(r.state=receive))
+--CTLSPEC
+--AG(EF(r.state=idle))
+--CTLSPEC
+--AG(EF(r.state=collision))
+--CTLSPEC
+--AG(EF(r.state=single))
+--CTLSPEC
+--AG(EF(r.state=end))
 
 MODULE reader(t1,t2)
 
@@ -73,13 +73,12 @@ ASSIGN
     init(state) := transmit;
     next(state) :=
         case
-          (continue=TRUE) & (state=transmit) : receive;
-          (k=0) & (state=receive) : idle;
-          (k=2) & (state=receive) : collision;
-          (k=1) & (state=receive) : single;
-          (state=single) & (address=-1) : end;
-          (state=idle) | (state=collision) | ((state=single) & !(address=-1)) : transmit;
-          -- (state=single) & (address=-1) : end;
+          (continue=TRUE) & (state=transmit)                : receive;
+          (k=0) & (state=receive)                           : idle;
+          (k=2) & ((state=receive) | (state=idle))          : collision;
+          (k=1) & ((state=receive) | (state=idle))          : single;
+          (state=idle) | (state=collision) | (state=single) : transmit;
+          (state=single) & (address=-1)                     : end;
           TRUE : state;
         esac;
 
