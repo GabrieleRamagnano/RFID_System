@@ -8,7 +8,7 @@ VAR
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
-CTLSPEC
+/--CTLSPEC
 EF(t1.state=transmit)
 CTLSPEC
 EF(t1.state=receive)
@@ -28,40 +28,41 @@ EF(t2.state=collision)
 CTLSPEC
 EF(t2.state=single)
 CTLSPEC
-EF(t2.state=end)
+EF(t2.state=end)--/
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
 
---CTLSPEC
---AG(EF(r.state=transmit))
---CTLSPEC
---AG(EF(r.state=receive))
+CTLSPEC
+AG(EF(r.state=transmit))
+CTLSPEC
+AG(EF(r.state=receive))
 CTLSPEC
 AG(EF(r.state=idle))
---CTLSPEC
---AG(EF(r.state=collision))
---CTLSPEC
---AG(EF(r.state=single))
---CTLSPEC
---AG(EF(r.state=end))
+CTLSPEC
+AG(EF(r.state=collision))
+CTLSPEC
+AG(EF(r.state=single))
+CTLSPEC
+AG(EF(r.state=end))
 
 MODULE reader(t1,t2)
 
 VAR
  continue: boolean;
  bit     : -1..8;
+ a       : unsigned word[1];
  state   : {transmit,receive,idle,collision_bit,
-            collision_bit,single,end};
+            collision,single_bit,single,end};
  
 -- reader's address
-DEFINE
+/--DEFINE
   a := (bit=1) & (state=collision) ? 
        0ub1_0 :
-       /--(bit=2) & (state=single) & (resize(b,sizeof(b)-1)=0ub1_1) ? 
-       0ub1_1 :--/ 
+       (bit=2) & (state=single) & (resize(b,sizeof(b)-1)=0ub1_1) ? 
+       0ub1_1 :
        (bit=1) & (state=single) & (a=0ub1_0) ? 
-       0ub1_1 : 0ub1_0;
+       0ub1_1 : 0ub1_0;--/
 
 /--DEFINE
   b := (bit=2) & (state=collision) ?
@@ -88,12 +89,20 @@ ASSIGN
            TRUE : continue;
         esac;
 
+    init(a) := 0ub1_0;
+    next(a) := 
+        case
+           (bit=1) & (state=collision)           : 0ub1_0;
+           (bit=1) & (state=single) & (a=0ub1_0) : 0ub1_1;
+           TRUE : a;
+        esac;
+
     init(bit) := 0;
     next(bit) :=
         case
-          (state=collision_bit) & (bit=0) |  
-          (state=single_bit) & (bit=1) & (a=0ub1_0) :  1;
-          (state=single_bit) & (bit=1) & (a=0ub1_1) : -1;
+          ((state=collision_bit) & (bit=0)) |  
+          ((state=single_bit) & (bit=1) & (a=0ub1_0)) :  1;
+          (state=single_bit) & (bit=1) & (a=0ub1_1)   : -1;
           TRUE : bit;
         esac;
 
@@ -118,13 +127,13 @@ MODULE tag(r,address,significant_bit)
 
 VAR
  continue : boolean;
- value    : {alt, empty, a};
- state    : {receive,transmit,collision,single,end};
+ value    : {alt, empty, one};
+ state    : {receive,equal,equal_1,transmit,collision,single,end};
  
 
 -- length of address' tag
 DEFINE
-  length := (r.receive) & (significant_bit >= r.bit) ? in : out;
+  length := (r.state=receive) & (significant_bit >= r.bit) ? 1 : 0;
 
 
 
@@ -142,22 +151,22 @@ ASSIGN
         case
            (state!=equal)            : alt;
            (state=equal) & (r.bit=0) : empty;
-           (state=equal) & (r.bit=1) : a;
+           (state=equal) & (r.bit=1) : one;
            TRUE : value;
         esac;
 
     init(state) := receive;
     next(state) :=
         case
-           (r.state=receive) & (length=in) & (state=receive) : equal;
-           (state=equal)                                     : equal_1;
-           (state=equal_1) & (value=alt)                     : receive;
+           (r.state=receive) & (length=1) & (state=receive) : equal;
+           (state=equal)                                    : equal_1;
+           (state=equal_1) & (value=alt)                    : receive;
            (state=equal_1) & ((value=empty) | 
-           ((value=a) & (r.a=address << 7)))                 : transmit;
-           (r.state=collision) & (state=transmit)            : collision;
-           (r.state=single) & (state=transmit)               : single;
-           (state=collision)                                 : receive;
-           (state=single)                                    : end;
+           ((value=one) & (r.a=resize(address << 7,1))))    : transmit;
+           (r.state=collision) & (state=transmit)           : collision;
+           (r.state=single) & (state=transmit)              : single;
+           (state=collision)                                : receive;
+           (state=single)                                   : end;
            TRUE : state;
         esac;
 
