@@ -84,7 +84,7 @@ ASSIGN
         case
           (continue=TRUE) & (state=transmit)                : receive;
           (k=0) & (state=receive)                           : idle;
-          (k=2) & ((state=receive) | (state=idle))          : collision;
+          (k>=2) & ((state=receive) | (state=idle))         : collision;
           (k=1) & ((state=receive) | (state=idle))          : single;
           (address=-1) & ((state=idle) | (state=single))    : end;
           (state=idle) | (state=collision) | (state=single) : transmit;
@@ -100,7 +100,7 @@ VAR
  address : {-1,0,1};
  state   : {receive,transmit,collision,single,end};
  
- 
+
 ASSIGN
 
     init(continue) := TRUE;
