@@ -154,8 +154,11 @@ ASSIGN
     next(bit) :=
         case
           ((state=collision_bit) & (bit=0)) |  
-          ((state=single_bit) & (bit=1) & (a=0ub1_0)) :  1;
-          (state=single_bit) & (bit=1) & (a=0ub1_1)   : -1;
+          ((state=single_bit) & (bit=1) & (a=0ub1_0))         :  1;
+          (state=single_bit) & (bit=1) & (a=0ub1_1)           : -1;
+          (state=collision_bit) & (bit=1)                     :  2;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
           TRUE : bit;
         esac;
 
