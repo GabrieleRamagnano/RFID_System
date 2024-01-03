@@ -50,8 +50,8 @@ VAR
 
 -- collision detection
 DEFINE 
-  k := count((t1.state=transmit),(t2.state=transmit));
-            -- (t3.state=transmit),(t4.state=transmit)); 
+  k := count((t1.state=transmit),(t2.state=transmit),
+             (t3.state=transmit),(t4.state=transmit)); 
 
 ASSIGN
 
@@ -82,12 +82,16 @@ ASSIGN
     init(bit) := 0;
     next(bit) :=
         case
-          ((state=collision_bit) & (bit=0)) |  
-          ((state=single_bit) & (bit=1) & (a=0ub1_0))         :  1;
+          -- collision
+          (state=collision_bit) & (bit=0)                     :  1;
+          (state=collision_bit) & (bit=1)                     :  2; 
+
+          -- single
           (state=single_bit) & (bit=1) & (a=0ub1_1)           : -1;
-      /-- (state=collision_bit) & (bit=1)                     :  2;
+          (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
-          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2; --/
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
+ 
           TRUE : bit;
         esac;
 
@@ -151,7 +155,7 @@ ASSIGN
            ((value=two) & (r.b=resize(address,2))))       : transmit;
            (r.state=collision) & (state=transmit)         : collision;
            (r.state=single) & (state=transmit)            : single;
-           (state=collision)                              : receive;
+           (state=equal_1) | (state=collision)            : receive;
            (state=single)                                 : end;
            TRUE : state;
         esac;
