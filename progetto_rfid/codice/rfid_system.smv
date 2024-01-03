@@ -148,7 +148,7 @@ ASSIGN
            (r.state=receive) & (length) & (state=receive) : equal;
            (state=equal)                                  : equal_1;
            (state=equal_1) & ((value=empty) | 
-           ((value=one) & (r.a=resize(address,1))) |
+           ((value=one) & (r.a=resize(address >> 1,1))) |
            ((value=two) & (r.b=resize(address,1)::
             resize(address >> 1,1))))                     : transmit;
            (r.state=collision) & (state=transmit)         : collision;
