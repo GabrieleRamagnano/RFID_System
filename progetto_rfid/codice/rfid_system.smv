@@ -2,8 +2,8 @@ MODULE main
 
 VAR
  r : reader(t1,t2);
- t1: tag(r,0ub8_0000_0000,1);
- t2: tag(r,0ub8_0000_0001,1);
+ t1: tag1(r,0ub8_0000_0000,1);
+ t2: tag2(r,0ub8_0000_0001,1);
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
@@ -140,7 +140,7 @@ ASSIGN
 
 
 
-MODULE tag(r,address,significant_bit)
+MODULE tag1(r,address,significant_bit)
 
 VAR
  continue : boolean;
@@ -179,7 +179,56 @@ ASSIGN
            (state=equal)                                    : equal_1;
            --(state=equal_1) & (value=alt)                    : receive;
            (state=equal_1) & ((value=empty) | 
-           ((value=one) & (r.a=resize(address << 7,1))))    : transmit;
+           ((value=one) & (r.a=0ub1_0)))    : transmit;
+           (r.state=collision) & (state=transmit)           : collision;
+           (r.state=single) & (state=transmit)              : single;
+           (state=collision)                                : receive;
+           (state=single)                                   : end;
+           TRUE : state;
+        esac;
+ 
+
+
+MODULE tag2(r,address,significant_bit)
+
+VAR
+ continue : boolean;
+ value    : {alt, empty, one};
+ state    : {receive,equal,equal_1,transmit,collision,single,end};
+ 
+
+-- length of address' tag
+DEFINE
+  length := (r.state=receive) & (significant_bit >= r.bit) ? 1 : 0;
+
+
+
+ASSIGN
+
+    init(continue) := TRUE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+           TRUE : continue;
+        esac;
+
+    init(value) := alt;
+    next(value) :=
+        case
+          -- (state!=equal)            : alt;
+           (state=equal) & (r.bit=0) : empty;
+           (state=equal) & (r.bit=1) : one;
+           TRUE : value;
+        esac;
+
+    init(state) := receive;
+    next(state) :=
+        case
+           (r.state=receive) & (length=1) & (state=receive) : equal;
+           (state=equal)                                    : equal_1;
+           --(state=equal_1) & (value=alt)                    : receive;
+           (state=equal_1) & ((value=empty) | 
+           ((value=one) & (r.a=0ub1_1)))    : transmit;
            (r.state=collision) & (state=transmit)           : collision;
            (r.state=single) & (state=transmit)              : single;
            (state=collision)                                : receive;
@@ -194,5 +243,3 @@ ASSIGN
 
 
  
-
-
