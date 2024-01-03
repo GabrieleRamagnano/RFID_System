@@ -19,7 +19,13 @@ EF(t2.state=end)
 CTLSPEC
 EF(t3.state=end)
 CTLSPEC
+EF(t2.state=transmit)
+CTLSPEC
+EF(r.b=resize(0ub8_0000_0001,1)::resize(0ub8_0000_0001 >> 1,1))
+CTLSPEC
 EF(t4.state=end)
+CTLSPEC
+EF(r.b=0ub2_11)
 --CTLSPEC
 --EF(r.b=0ub2_01 & t2.value=one & r.bit=2)
 
@@ -64,7 +70,7 @@ ASSIGN
     next(b) := 
         case
            (bit=2) & (state=collision)                     : a :: 0ub1_0;
-           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b,1) :: 0ub1_1;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
            TRUE : b;
         esac;
 
@@ -142,8 +148,7 @@ ASSIGN
            (state=equal)                                  : equal_1;
            (state=equal_1) & ((value=empty) | 
            ((value=one) & (r.a=resize(address >> 1,1))) |
-           ((value=two) & (r.b=resize(address,1)::
-            resize(address >> 1,1))))                     : transmit;
+           ((value=two) & (r.b=resize(address,2))))       : transmit;
            (r.state=collision) & (state=transmit)         : collision;
            (r.state=single) & (state=transmit)            : single;
            (state=equal_1) | (state=collision)            : receive;
