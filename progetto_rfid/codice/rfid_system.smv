@@ -4,6 +4,8 @@ VAR
  r : reader(t1,t2);
  t1: tag(r,0ub8_0000_0000,1);
  t2: tag(r,0ub8_0000_0001,1);
+ t3: tag(r,0ub8_0000_0010,2);
+ t4: tag(r,0ub8_0000_0011,2);
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
@@ -44,6 +46,28 @@ EF(t1.state=end)
 CTLSPEC
 --AG(EF(r.k=1))
 EF(r.k=1)
+
+-- 2-bit
+CTLSPEC
+EF(t3.state=transmit)
+CTLSPEC
+EF(t3.state=receive)
+CTLSPEC
+EF(t3.state=collision)
+CTLSPEC
+EF(t3.state=single)
+CTLSPEC
+EF(t3.state=end)
+CTLSPEC
+EF(t4.state=transmit)
+CTLSPEC
+EF(t4.state=receive)
+CTLSPEC
+EF(t4.state=collision)
+CTLSPEC
+EF(t4.state=single)
+CTLSPEC
+EF(t4.state=end)
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
@@ -89,6 +113,7 @@ VAR
  continue: boolean;
  bit     : -1..8;
  a       : unsigned word[1];
+ b       : unsigned word[2];
  state   : {transmit,receive,idle,collision_bit,
             collision,single_bit,single,end};
  
@@ -129,9 +154,18 @@ ASSIGN
     init(a) := 0ub1_0;
     next(a) := 
         case
-           (bit=1) & (state=collision)           : 0ub1_0;
-           (bit=1) & (state=single) & (a=0ub1_0) : 0ub1_1;
+           (bit=1) & (state=collision)                     : 0ub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1;
+           (bit=1) & (state=single) & (a=0ub1_0)           : 0ub1_1;
            TRUE : a;
+        esac;
+    
+    init(b) := 0ub2_00;
+    next(b) := 
+        case
+           (bit=2) & (state=collision)                     : a :: oub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b,1) :: 0ub1_1;
+           TRUE : b;
         esac;
 
     init(bit) := 0;
@@ -189,6 +223,7 @@ ASSIGN
         case
            (state=equal) & (r.bit=0) : empty;
            (state=equal) & (r.bit=1) : one;
+           (state=equal) & (r.bit=2) : two;
            TRUE : value;
         esac;
 
@@ -198,7 +233,8 @@ ASSIGN
            (r.state=receive) & (length=1) & (state=receive) : equal;
            (state=equal)                                    : equal_1;
            (state=equal_1) & ((value=empty) | 
-           ((value=one) & (r.a=resize(address,1))))         : transmit;
+           ((value=one) & (r.a=resize(address,1))) |
+           ((value=two) & (r.b=resize(address,2))))         : transmit;
            (r.state=collision) & (state=transmit)           : collision;
            (r.state=single) & (state=transmit)              : single;
            (state=collision)                                : receive;
