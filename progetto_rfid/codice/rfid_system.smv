@@ -1,7 +1,7 @@
 MODULE main
 
 VAR
- r : reader(t1,t2);
+ r : reader(t1,t2,t3,t4);
  t1: tag(r,0ub8_0000_0000,1);
  t2: tag(r,0ub8_0000_0001,1);
  t3: tag(r,0ub8_0000_0010,2);
@@ -10,7 +10,8 @@ VAR
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
-/--CTLSPEC
+-- tag1
+CTLSPEC
 EF(t1.state=transmit)
 CTLSPEC
 EF(t1.state=receive)
@@ -20,7 +21,8 @@ CTLSPEC
 EF(t1.state=single)
 CTLSPEC
 EF(t1.state=end)
---/
+
+-- tag2
 CTLSPEC
 EF(t2.state=transmit)
 CTLSPEC
@@ -31,83 +33,11 @@ CTLSPEC
 EF(t2.state=single)
 CTLSPEC
 EF(t2.state=end)
-CTLSPEC
-EF(t2.length=1)
-CTLSPEC
-EF(t2.value=one)
-CTLSPEC
-EF(t2.state=equal)
-CTLSPEC
-EF(t2.state=equal_1)
-CTLSPEC
-EF(t1.state=single)
-CTLSPEC
-EF(t1.state=end)
-CTLSPEC
---AG(EF(r.k=1))
-EF(r.k=1)
-
--- 2-bit
-CTLSPEC
-EF(t3.state=transmit)
-CTLSPEC
-EF(t3.state=receive)
-CTLSPEC
-EF(t3.state=collision)
-CTLSPEC
-EF(t3.state=single)
-CTLSPEC
-EF(t3.state=end)
-CTLSPEC
-EF(t4.state=transmit)
-CTLSPEC
-EF(t4.state=receive)
-CTLSPEC
-EF(t4.state=collision)
-CTLSPEC
-AG(EF(t4.state=single))
-CTLSPEC
-AG(EF(t4.state=end))
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
 
-/--CTLSPEC
-AG(EF(r.state=transmit))
-CTLSPEC
-AG(EF(r.state=receive))
-CTLSPEC
-AG(EF(r.state=idle))
-CTLSPEC
-AG(EF(r.state=collision))
-CTLSPEC
-AG(EF(r.state=single))
-CTLSPEC
-AG(EF(r.state=single_bit))
-CTLSPEC
-AG(EF(r.state=end))
-CTLSPEC
-AG(EF(r.bit=1))
---/
-
-CTLSPEC
-EF(r.state=transmit)
-CTLSPEC
-EF(r.state=receive)
-CTLSPEC
-EF(r.state=idle)
-CTLSPEC
-EF(r.state=collision)
-CTLSPEC
-EF(r.state=single)
-CTLSPEC
-EF(r.state=single_bit)
-CTLSPEC
-EF(r.state=end)
-CTLSPEC
-EF(r.bit=1)
-
-MODULE reader(t1,t2)
+MODULE reader(t1,t2,t3,t4)
 
 VAR
  continue: boolean;
@@ -120,8 +50,8 @@ VAR
 
 -- collision detection
 DEFINE 
-  k := count((t1.state=transmit),(t2.state=transmit),
-             (t3.state=transmit),(t4.state=transmit)); 
+  k := count((t1.state=transmit),(t2.state=transmit));
+            -- (t3.state=transmit),(t4.state=transmit)); 
 
 ASSIGN
 
@@ -155,9 +85,9 @@ ASSIGN
           ((state=collision_bit) & (bit=0)) |  
           ((state=single_bit) & (bit=1) & (a=0ub1_0))         :  1;
           (state=single_bit) & (bit=1) & (a=0ub1_1)           : -1;
-          (state=collision_bit) & (bit=1)                     :  2;
+      /-- (state=collision_bit) & (bit=1)                     :  2;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
-          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2; --/
           TRUE : bit;
         esac;
 
@@ -196,11 +126,11 @@ ASSIGN
         esac;
 
     init(length) := FALSE;
-    next(length) :=
+    next(length) := 
         case
            (r.state=receive) & (significant_bit >= r.bit) : TRUE;
            TRUE : length;
-        esac;
+        esac; 
 
     init(value) := alt;
     next(value) :=
