@@ -18,7 +18,7 @@ CTLSPEC
 EF(t1.state=single)
 CTLSPEC
 EF(t1.state=end)
-
+--/
 CTLSPEC
 EF(t2.state=transmit)
 CTLSPEC
@@ -28,12 +28,24 @@ EF(t2.state=collision)
 CTLSPEC
 EF(t2.state=single)
 CTLSPEC
-EF(t2.state=end)--/
+EF(t2.state=end)
+CTLSPEC
+EF(t2.length=1)
+CTLSPEC
+EF(t2.value=one)
+CTLSPEC
+EF(t2.state=equal)
+CTLSPEC
+EF(t2.state=equal_1)
+CTLSPEC
+EF(t1.state=single)
+CTLSPEC
+AG(EF(r.k=1))
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
 
-CTLSPEC
+/--CTLSPEC
 AG(EF(r.state=transmit))
 CTLSPEC
 AG(EF(r.state=receive))
@@ -44,7 +56,12 @@ AG(EF(r.state=collision))
 CTLSPEC
 AG(EF(r.state=single))
 CTLSPEC
+AG(EF(r.state=single_bit))
+CTLSPEC
 AG(EF(r.state=end))
+CTLSPEC
+AG(EF(r.bit=1))
+--/
 
 MODULE reader(t1,t2)
 
@@ -149,7 +166,7 @@ ASSIGN
     init(value) := alt;
     next(value) :=
         case
-           (state!=equal)            : alt;
+          -- (state!=equal)            : alt;
            (state=equal) & (r.bit=0) : empty;
            (state=equal) & (r.bit=1) : one;
            TRUE : value;
@@ -160,7 +177,7 @@ ASSIGN
         case
            (r.state=receive) & (length=1) & (state=receive) : equal;
            (state=equal)                                    : equal_1;
-           (state=equal_1) & (value=alt)                    : receive;
+           --(state=equal_1) & (value=alt)                    : receive;
            (state=equal_1) & ((value=empty) | 
            ((value=one) & (r.a=resize(address << 7,1))))    : transmit;
            (r.state=collision) & (state=transmit)           : collision;
