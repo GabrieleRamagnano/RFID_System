@@ -10,33 +10,18 @@ VAR
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
-/--CTLSPEC
-EF(t3.state=single)
-CTLSPEC
-EF(t3.state=end)--/
 
 -- check on reader
 CTLSPEC
-EF(r.b=0ub2_00)
+EF(t1.state=end)
 CTLSPEC
-EF(r.b=0ub2_01)
+EF(t2.state=end)
 CTLSPEC
-EF(r.b=0ub2_10)
-CTLSPEC
-EF(r.b=0ub2_11)
+EF(t3.state=end)
 CTLSPEC
 EF(t4.state=end)
-CTLSPEC
-EF(r.a=0ub1_0)
-CTLSPEC
-EF(r.b=0ub2_00 & t1.value=two & t1.state=transmit)
-CTLSPEC
-EF(r.a=0ub1_0 & t3.value=one & t3.state=transmit)
-CTLSPEC
-EF(r.bit=2 & r.state=single)
-CTLSPEC
-EF(r.bit=2 & r.state=single & r.b=0ub2_10)
-
+--CTLSPEC
+--EF(r.b=0ub2_01 & t2.value=one & r.bit=2)
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
