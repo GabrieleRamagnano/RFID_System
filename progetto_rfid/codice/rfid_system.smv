@@ -65,9 +65,9 @@ EF(t4.state=receive)
 CTLSPEC
 EF(t4.state=collision)
 CTLSPEC
-EF(t4.state=single)
+AG(EF(t4.state=single))
 CTLSPEC
-EF(t4.state=end)
+AG(EF(t4.state=end))
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
