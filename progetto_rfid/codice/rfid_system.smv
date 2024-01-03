@@ -17,7 +17,15 @@ EF(t3.state=end)--/
 
 -- check on reader
 CTLSPEC
+EF(r.b=0ub2_00)
+CTLSPEC
+EF(r.b=0ub2_01)
+CTLSPEC
 EF(r.b=0ub2_10)
+CTLSPEC
+EF(r.b=0ub2_11)
+CTLSPEC
+EF(t4.state=end)
 CTLSPEC
 EF(r.a=0ub1_0)
 CTLSPEC
