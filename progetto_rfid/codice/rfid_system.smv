@@ -116,24 +116,6 @@ VAR
  b       : unsigned word[2];
  state   : {transmit,receive,idle,collision_bit,
             collision,single_bit,single,end};
- 
--- reader's address
-/--DEFINE
-  a := (bit=1) & (state=collision) ? 
-       0ub1_0 :
-       (bit=2) & (state=single) & (resize(b,sizeof(b)-1)=0ub1_1) ? 
-       0ub1_1 :
-       (bit=1) & (state=single) & (a=0ub1_0) ? 
-       0ub1_1 : 0ub1_0;--/
-
-/--DEFINE
-  b := (bit=2) & (state=collision) ?
-       a :: 0ub1_0 :
-       (bit=3) & (state=single) & (resize(c,sizeof(c)-1)=0ub1_1) ?
-       resize(c,1) :
-       (bit=2) & (state=single) & (resize(b,sizeof(b)-1)=0ub1_0) ?
-       resize(b,1) :: 0ub1_1 : 0ub1_00;--/
-
 
 
 -- collision detection
