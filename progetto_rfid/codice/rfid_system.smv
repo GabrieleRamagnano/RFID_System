@@ -40,6 +40,8 @@ EF(t2.state=equal_1)
 CTLSPEC
 EF(t1.state=single)
 CTLSPEC
+EF(t1.state=end)
+CTLSPEC
 --AG(EF(r.k=1))
 EF(r.k=1)
 
