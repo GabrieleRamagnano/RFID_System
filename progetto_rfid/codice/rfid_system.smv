@@ -2,37 +2,51 @@ MODULE main
 
 VAR
  r : reader(t1,t2,t3,t4);
- t1: tag(r,0ub8_0000_0000,1);
- t2: tag(r,0ub8_0000_0001,1);
+ t1: tag(r,0ub8_0000_0000,2);
+ t2: tag(r,0ub8_0000_0001,2);
  t3: tag(r,0ub8_0000_0010,2);
  t4: tag(r,0ub8_0000_0011,2);
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
--- tag1
+-- tag3
 CTLSPEC
-EF(t1.state=transmit)
+EF(t3.state=transmit)
 CTLSPEC
-EF(t1.state=receive)
+EF(t3.state=receive)
 CTLSPEC
-EF(t1.state=collision)
+EF(t3.state=collision)
 CTLSPEC
-EF(t1.state=single)
+EF(t3.state=single)
 CTLSPEC
-EF(t1.state=end)
+EF(t3.state=end)
 
--- tag2
+-- check on reader
 CTLSPEC
-EF(t2.state=transmit)
+EF(r.b=0ub2_10)
 CTLSPEC
-EF(t2.state=receive)
+EF(r.a=0ub1_0)
 CTLSPEC
-EF(t2.state=collision)
+EF(r.b=0ub2_00 & t1.value=two & t1.state=transmit)
 CTLSPEC
-EF(t2.state=single)
+EF(r.a=0ub1_0 & t3.value=one & t3.state=transmit)
 CTLSPEC
-EF(t2.state=end)
+EF(r.bit=2 & r.state=single)
+CTLSPEC
+EF(r.bit=2 & r.state=single & r.b=0ub2_10)
+
+-- tag4
+CTLSPEC
+EF(t4.state=transmit)
+CTLSPEC
+EF(t4.state=receive)
+CTLSPEC
+EF(t4.state=collision)
+CTLSPEC
+EF(t4.state=single)
+CTLSPEC
+EF(t4.state=end)
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
