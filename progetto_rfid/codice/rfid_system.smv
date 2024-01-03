@@ -163,7 +163,7 @@ ASSIGN
     init(b) := 0ub2_00;
     next(b) := 
         case
-           (bit=2) & (state=collision)                     : a :: oub1_0;
+           (bit=2) & (state=collision)                     : a :: 0ub1_0;
            (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b,1) :: 0ub1_1;
            TRUE : b;
         esac;
@@ -198,7 +198,7 @@ MODULE tag(r,address,significant_bit)
 VAR
  continue : boolean;
  length   : 0..1;
- value    : {alt, empty, one};
+ value    : {alt, empty,one,two};
  state    : {receive,equal,equal_1,transmit,collision,single,end};
  
 
