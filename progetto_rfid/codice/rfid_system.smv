@@ -116,7 +116,7 @@ ASSIGN
           -- collision
           (state=collision_bit) & (bit=0)                     :  1;
           (state=collision_bit) & (bit=1)                     :  2; 
-
+          (state=collision_bit) & (bit=2)                     :  3;
           -- single
           (state=single_bit) & (bit=3) & (c=0ub3_111)         : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
