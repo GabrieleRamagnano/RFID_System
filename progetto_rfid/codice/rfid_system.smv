@@ -64,7 +64,7 @@ VAR
  bit     : -1..8;
  a       : unsigned word[1];
  b       : unsigned word[2];
- c       : unsigned word[2];
+ c       : unsigned word[3];
  state   : {transmit,receive,idle,collision_bit,
             collision,single_bit,single,end};
 
@@ -118,7 +118,7 @@ ASSIGN
           (state=collision_bit) & (bit=1)                     :  2; 
 
           -- single
-          (state=single_bit) & (bit=2) & (b=0ub2_111)         : -1;
+          (state=single_bit) & (bit=3) & (c=0ub3_111)         : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
@@ -167,7 +167,7 @@ ASSIGN
            ((r.state=receive) & (r.bit=0)) |                                    
            ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - (s_bit - 1)), 1))) | 
            ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit - 2)), 2))) | 
-           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit)),3)))      : TRUE;
+           ((r.state=receive) & (r.bit=2) & (r.c=resize(address >> (s_bit - (s_bit)),3)))      : TRUE;
            (r.state!=receive)                                                                  : FALSE;
            TRUE : confirm;
         esac; 
