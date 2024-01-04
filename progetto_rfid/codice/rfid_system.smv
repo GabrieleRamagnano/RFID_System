@@ -1,11 +1,13 @@
 MODULE main
 
 VAR
- r : reader(t1,t2,t3,t4);
- t1: tag(r,0ub8_0000_0000,2);
- t2: tag(r,0ub8_0000_0001,2);
- t3: tag(r,0ub8_0000_0010,2);
- t4: tag(r,0ub8_0000_0011,2);
+ r : reader(t1,t2,t3,t4,t5,t6);
+ t1: tag(r,0ub8_0000_0000,3);
+ t2: tag(r,0ub8_0000_0001,3);
+ t3: tag(r,0ub8_0000_0010,3);
+ t4: tag(r,0ub8_0000_0011,3);
+ t5: tag(r,0ub8_0000_0100,3);
+ t6: tag(r,0ub8_0000_0111,3);
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
@@ -55,13 +57,14 @@ AG((r.b=0ub2_11) -> AF(t4.state=end))
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
 
-MODULE reader(t1,t2,t3,t4)
+MODULE reader(t1,t2,t3,t4,t5,t6)
 
 VAR
  continue: boolean;
  bit     : -1..8;
  a       : unsigned word[1];
  b       : unsigned word[2];
+ c       : unsigned word[2];
  state   : {transmit,receive,idle,collision_bit,
             collision,single_bit,single,end};
 
@@ -69,7 +72,8 @@ VAR
 -- collision detection
 DEFINE 
   k := count((t1.state=transmit),(t2.state=transmit),
-             (t3.state=transmit),(t4.state=transmit)); 
+             (t3.state=transmit),(t4.state=transmit),
+             (t5.state=transmit),(t6.state=transmit)); 
 
 ASSIGN
 
@@ -93,8 +97,17 @@ ASSIGN
     next(b) := 
         case
            (bit=2) & (state=collision)                     : a :: 0ub1_0;
+           (bit=3) & (state=single) & (resize(c,1)=0ub1_1) : resize(c >> 1,2);
            (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
            TRUE : b;
+        esac;
+    
+    init(c) := 0ub3_000;
+    next(c) := 
+        case
+           (bit=3) & (state=collision)                     : b :: 0ub1_0;
+           (bit=3) & (state=single) & (resize(c,1)=0ub1_0) : resize(c >> 1,2) :: 0ub1_1;
+           TRUE : c;
         esac;
 
     init(bit) := 0;
@@ -105,10 +118,12 @@ ASSIGN
           (state=collision_bit) & (bit=1)                     :  2; 
 
           -- single
-          (state=single_bit) & (bit=2) & (b=0ub2_11)          : -1;
+          (state=single_bit) & (bit=2) & (b=0ub2_111)         : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
+          (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_1) :  2;
+          (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_0) :  3;
           TRUE : bit;
         esac;
 
@@ -151,7 +166,8 @@ ASSIGN
         case
            ((r.state=receive) & (r.bit=0)) |                                    
            ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - (s_bit - 1)), 1))) | 
-           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit)), 2)))     : TRUE;
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit - 2)), 2))) | 
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit)),3)))      : TRUE;
            (r.state!=receive)                                                                  : FALSE;
            TRUE : confirm;
         esac; 
