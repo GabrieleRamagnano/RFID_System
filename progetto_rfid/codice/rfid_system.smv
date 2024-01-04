@@ -128,7 +128,10 @@ ASSIGN
           (state=collision_bit) & (bit=1)                     :  2; 
           (state=collision_bit) & (bit=2)                     :  3;
           -- single
-          (state=single_bit) & (bit=2) & (b=0ub2_11)          : -1;
+          -- implementazione alternativa...
+          (t1.state=end) & (t2.state=end) & (t3.state=end) &
+          (t4.state=end) & (t5.state=end) & (t6.state=end)    : -1;
+       -- (state=single_bit) & (bit=2) & (b=0ub2_11)          : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
