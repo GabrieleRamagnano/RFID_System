@@ -167,7 +167,7 @@ ASSIGN
            ((r.state=receive) & (r.bit=0)) |                                    
            ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - (s_bit - 1)), 1))) | 
            ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit - 2)), 2))) | 
-           ((r.state=receive) & (r.bit=2) & (r.c=resize(address >> (s_bit - (s_bit)),3)))      : TRUE;
+           ((r.state=receive) & (r.bit=3) & (r.c=resize(address >> (s_bit - (s_bit)),3)))      : TRUE;
            (r.state!=receive)                                                                  : FALSE;
            TRUE : confirm;
         esac; 
