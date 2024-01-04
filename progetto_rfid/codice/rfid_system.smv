@@ -2,10 +2,10 @@ MODULE main
 
 VAR
  r : reader(t1,t2,t3,t4);
- t1: tag(r,0ub8_0000_0000);
- t2: tag(r,0ub8_0000_0001);
- t3: tag(r,0ub8_0000_0010);
- t4: tag(r,0ub8_0000_0011);
+ t1: tag(r,0ub8_0000_0000,2);
+ t2: tag(r,0ub8_0000_0001,2);
+ t3: tag(r,0ub8_0000_0010,2);
+ t4: tag(r,0ub8_0000_0011,2);
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
@@ -107,13 +107,13 @@ ASSIGN
         esac;
 
 
-MODULE tag(r,address)
+MODULE tag(r,address,s_bit)
 
 VAR
  continue : boolean;
  confirm  : boolean;
- n        : 0..8;  
- state    : {receive,equal,equal_1,transmit,collision,single,end};
+ n        : 0..s_bit;  
+ state    : {receive,transmit,collision,single,end};
  
 
 ASSIGN
@@ -128,27 +128,30 @@ ASSIGN
     init(n) := 0;
     next(n) :=
         case
-           (state=collision) : n + 1;
+           (state=collision) & (n < s_bit) : n + 1;
            TRUE : n;
         esac;
 
-    init(confirm) := FALSE;
+   /-- init(confirm) := FALSE;
     next(confirm) :=
         case
-           ((r.state=transmit) & (r.bit=0)) |                                    
-           ((r.state=transmit) & (r.bit=1) (resize(address >> (8 - n), r.bit))) | 
-           ((r.state=transmit) & (r.bit=2) (resize(address >> (8 - n), r.bit))) : TRUE;
-           TRUE : FALSE; 
-        esac;
+           ((r.state=receive) & (r.bit=0)) |                                    
+           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - n), 1))) | 
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - n), 2))) : TRUE;
+           (r.state!=receive)                                                        : FALSE;
+           TRUE : confirm;
+        esac; --/
      
     init(state) := receive;   
     next(state) :=
         case
-           (r.state=receive) & (state=receive) & (confirm) : transmit;
-           (r.state=collision) & (state=transmit)          : collision;
-           (r.state=single) & (state=transmit)             : single;
-           (state=equal_1) | (state=collision)             : receive;
-           (state=single)                                  : end;
+           (state=receive) & (r.state=receive) & ((r.bit=0) |
+           ((r.bit=1) & (r.a=resize(address >> (s_bit - n), 1))) |  
+           ((r.bit=2) & (r.b=resize(address >> (s_bit - n), 2)))) : transmit;
+           (r.state=collision) & (state=transmit)                 : collision;
+           (r.state=single) & (state=transmit)                    : single;
+           (state=collision)                                      : receive;
+           (state=single)                                         : end;
            TRUE : state;
         esac;
 
