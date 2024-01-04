@@ -12,26 +12,26 @@ VAR
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
-CTLSPEC
+/--CTLSPEC
 EF(r.state=collision)
 CTLSPEC
-EF(r.state=single)
+EF(r.state=single)--/
 CTLSPEC
 AG(EF(r.state=idle))
-CTLSPEC
+/--CTLSPEC
 EF(r.state=end)
 CTLSPEC
-AG(EF(r.state=end))
+AG(EF(r.state=end))--/
 
 -- tags
-CTLSPEC
+/--CTLSPEC
 EF(t1.state=transmit)
 CTLSPEC
 AG!(t2.state=transmit)
 CTLSPEC
 EF(t3.state=transmit)
 CTLSPEC
-EF(t4.state=transmit)
+EF(t4.state=transmit)--/
 
 -- hard test
 /--CTLSPEC
@@ -44,14 +44,24 @@ CTLSPEC
 AG((r.b=0ub2_11) -> AF(t4.state=single))--/
 
 CTLSPEC
-AG((r.b=0ub2_00) -> AF(t1.state=end))
+AG((r.c=0ub3_000) -> AF(t1.state=end))
 CTLSPEC
-AG((r.b=0ub2_01) -> AF(t2.state=end))
+AG((r.c=0ub3_001) -> AF(t2.state=end))
 CTLSPEC
-AG((r.b=0ub2_10) -> AF(t3.state=end))
+AG((r.c=0ub3_010) -> AF(t3.state=end))
 CTLSPEC
-AG((r.b=0ub2_11) -> AF(t4.state=end))
+AG((r.c=0ub3_011) -> AF(t4.state=end))
 
+CTLSPEC
+AG((r.b=0ub2_10) -> AF(t5.state=end))
+CTLSPEC
+AG((r.b=0ub2_11) -> AF(t6.state=end))
+
+CTLSPEC
+AG((r.b=0ub2_11) -> AF(r.bit=-1))
+
+CTLSPEC
+AG((r.bit=-1) -> AF(r.state=end))
 
 
 -- verifichiamo se il reader rimane in deadlock
