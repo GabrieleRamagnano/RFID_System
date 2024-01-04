@@ -132,8 +132,7 @@ MODULE tag(r,address,s_bit)
 
 VAR
  continue : boolean;
- --confirm  : boolean;
- --n        : 0..s_bit;  
+ confirm  : boolean;
  state    : {receive,transmit,collision,single,end};
  
 
@@ -146,33 +145,28 @@ ASSIGN
            TRUE : continue;
         esac;
 
-   /-- init(n) := 0;
-    next(n) :=
-        case
-           (state=collision) & (n < s_bit) : n + 1;
-           TRUE : n;
-        esac;--/
 
-   /-- init(confirm) := FALSE;
+    init(confirm) := FALSE;
     next(confirm) :=
         case
            ((r.state=receive) & (r.bit=0)) |                                    
-           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - n), 1))) | 
-           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - n), 2))) : TRUE;
-           (r.state!=receive)                                                        : FALSE;
+           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - (s_bit - 1)), 1))) | 
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit)), 2)))     : TRUE;
+           (r.state!=receive)                                                                  : FALSE;
            TRUE : confirm;
-        esac; --/
+        esac; 
+    
+    --NOTE: s_bit indica il numero massimo di bit valutati. 
+    --      Dunque, in r.bit=2 lo shift è zero.
      
     init(state) := receive;   
     next(state) :=
         case
-           (state=receive) & (r.state=receive) & ((r.bit=0) |
-           ((r.bit=1) & (r.a=resize(address >> 1, 1)))      |  
-           ((r.bit=2) & (r.b=resize(address >> 0, 2))))      : transmit;
-           (r.state=collision) & (state=transmit)            : collision;
-           (r.state=single) & (state=transmit)               : single;
-           (state=collision)                                 : receive;
-           (state=single)                                    : end;
+           (state=receive) & (confirm)            : transmit;
+           (r.state=collision) & (state=transmit) : collision;
+           (r.state=single) & (state=transmit)    : single;
+           (state=collision)                      : receive;
+           (state=single)                         : end;
            TRUE : state;
         esac;
 
