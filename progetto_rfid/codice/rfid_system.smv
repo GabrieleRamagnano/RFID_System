@@ -10,7 +10,7 @@ VAR
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
-/--CTLSPEC
+CTLSPEC
 EF(r.state=collision)
 CTLSPEC
 EF(r.state=single)
@@ -19,7 +19,7 @@ AG(EF(r.state=idle))
 CTLSPEC
 EF(r.state=end)
 CTLSPEC
-AG(EF(r.state=end))--/
+AG(EF(r.state=end))
 
 -- tags
 CTLSPEC
