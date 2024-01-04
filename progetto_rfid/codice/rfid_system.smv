@@ -10,8 +10,18 @@ VAR
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
+CTLSPEC
+EF(r.state=collision)
+CTLSPEC
+EF(r.state=single)
+CTLSPEC
+AG(EF(r.state=idle))
+CTLSPEC
+EF(r.state=end)
+CTLSPEC
+AG(EF(r.state=end))
 
--- check on reader
+-- tags
 CTLSPEC
 EF(t1.state=end)
 CTLSPEC
@@ -19,15 +29,7 @@ EF(t2.state=end)
 CTLSPEC
 EF(t3.state=end)
 CTLSPEC
-EF(t2.state=transmit)
-CTLSPEC
-EF(r.b=resize(0ub8_0000_0001,1)::resize(0ub8_0000_0001 >> 1,1))
-CTLSPEC
 EF(t4.state=end)
-CTLSPEC
-EF(r.b=0ub2_11)
---CTLSPEC
---EF(r.b=0ub2_01 & t2.value=one & r.bit=2)
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
@@ -82,11 +84,10 @@ ASSIGN
           (state=collision_bit) & (bit=1)                     :  2; 
 
           -- single
-          (state=single_bit) & (bit=1) & (a=0ub1_1)           : -1;
+          (state=single_bit) & (bit=2) & (b=0ub2_11)          : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
- 
           TRUE : bit;
         esac;
 
