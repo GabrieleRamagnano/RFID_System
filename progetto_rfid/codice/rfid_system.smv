@@ -12,31 +12,32 @@ VAR
 
 
 -- hard test
-/--CTLSPEC
-AG(!t1.new_addr=0ub8_0000_0001)
-CTLSPEC
-AG(!(t1.state=end) & !(t2.state=end))
-CTLSPEC
-AG(!(r.state=end))
-LTLSPEC
+/--LTLSPEC
 F(G(t1.state=collision))->G(F(r.state=idle))--/
 /--LTLSPEC
 G(X(X(X(X(X(t1.state=collision))))))
 LTLSPEC
 G(X(X(X(X(X(X(t1.state=collision)))))))--/
+
 CTLSPEC
 EF(t2.state=end)
 CTLSPEC
 EF(t1.state=end)
 CTLSPEC
+EF(t3.state=end)
+CTLSPEC
+EF(t4.state=end)
+CTLSPEC
 EF(t1.new_addr=0ub8_0000_0001 & t2.new_addr=0ub8_0000_0000)
 CTLSPEC
 EF(t1.new_addr=0ub8_0000_0000)
+CTLSPEC
+AG(!(r.state=end))
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
 
-MODULE reader(t1,t2)
+MODULE reader(t1,t2,t3,t4)
 
 VAR
  continue: boolean;
