@@ -109,7 +109,6 @@ MODULE tag(r,address,s_bit,t2,t3,t4)
 VAR
  continue : boolean;
  solved   : boolean; 
- confirm  : boolean;
  coin     : {0,1};
  new_addr : unsigned word[8];
  bit_e    : unsigned word[1];
