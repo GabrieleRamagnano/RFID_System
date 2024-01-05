@@ -12,10 +12,14 @@ VAR
 
 
 -- hard test
-CTLSPEC
-AG(!t1.new_addr=0ub8_0000_0001)
+--CTLSPEC
+--AG(!t1.new_addr=0ub8_0000_0001)
 CTLSPEC
 AG(!(t1.state=end) & !(t2.state=end))
+CTLSPEC
+AG(!(t1.state=end))
+--CTLSPEC
+--EF((t1.state=end) & (t2.state=end) & (t3.state=end) & (t4.state=end))
 CTLSPEC
 AG(!(r.state=end))
 LTLSPEC
@@ -54,9 +58,9 @@ ASSIGN
     init(a) := 0ub1_0;
     next(a) := 
         case
-           (bit=1) & (state=collision)           : 0ub1_0;
+           (bit=1) & (state=collision)                     : 0ub1_0;
            (bit=2) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1;
-           (bit=1) & (state=single) & (a=0ub1_0) : 0ub1_1;
+           (bit=1) & (state=single) & (a=0ub1_0)           : 0ub1_1;
            TRUE : a;
         esac;
     
@@ -72,7 +76,7 @@ ASSIGN
     next(bit) :=
         case
           -- collision
-          (state=collision_bit) & (bit=0)           :  1;
+          (state=collision_bit) & (bit=0)                     :  1;
           (state=collision_bit) & (bit=1)                     :  2; 
 
           -- single
