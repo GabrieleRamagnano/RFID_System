@@ -44,7 +44,8 @@ VAR
 
 -- collision detection
 DEFINE 
-  k := count((t1.state=transmit),(t2.state=transmit));
+  k := count((t1.state=transmit),(t2.state=transmit),
+             (t3.state=transmit),(t4.state=transmit));
 
 ASSIGN
 
@@ -118,7 +119,7 @@ VAR
 -- bit's extraction 
 DEFINE
   extraction := (state=end)? -1 : coin;
-  
+
 ASSIGN
 
     init(continue) := TRUE;
