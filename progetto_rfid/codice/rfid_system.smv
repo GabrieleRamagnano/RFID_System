@@ -2,12 +2,12 @@ MODULE main
 
 VAR
  r : reader(t1,t2,t3,t4,t5,t6);
- t1: tag(r,0ub8_0000_0000,3);
- t2: tag(r,0ub8_0000_0001,3);
- t3: tag(r,0ub8_0000_0010,3);
+ t1: tag(r,0ub8_0000_0000,1,t2);
+ t2: tag(r,0ub8_0000_0000,1,t1);
+ /-- t3: tag(r,0ub8_0000_0010,3);
  t4: tag(r,0ub8_0000_0011,3);
  t5: tag(r,0ub8_0000_0100,3);
- t6: tag(r,0ub8_0000_0111,3);
+ t6: tag(r,0ub8_0000_0111,3); --/
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
@@ -15,53 +15,19 @@ VAR
 /--CTLSPEC
 EF(r.state=collision)
 CTLSPEC
-EF(r.state=single)--/
+EF(r.state=single)
 CTLSPEC
-AG(EF(r.state=idle))
+AG(EF(r.state=idle))--/
 /--CTLSPEC
 EF(r.state=end)
 CTLSPEC
 AG(EF(r.state=end))--/
 
--- tags
-/--CTLSPEC
-EF(t1.state=transmit)
-CTLSPEC
-AG!(t2.state=transmit)
-CTLSPEC
-EF(t3.state=transmit)
-CTLSPEC
-EF(t4.state=transmit)--/
-
 -- hard test
-/--CTLSPEC
-AG((r.b=0ub2_00) -> AF(t1.state=single))
 CTLSPEC
-AG((r.b=0ub2_01) -> AF(t2.state=single))
+AG((r.a=0ub1_0) -> AF(t1.state=end))
 CTLSPEC
-AG((r.b=0ub2_10) -> AF(t3.state=single))
-CTLSPEC
-AG((r.b=0ub2_11) -> AF(t4.state=single))--/
-
-CTLSPEC
-AG((r.c=0ub3_000) -> AF(t1.state=end))
-CTLSPEC
-AG((r.c=0ub3_001) -> AF(t2.state=end))
-CTLSPEC
-AG((r.c=0ub3_010) -> AF(t3.state=end))
-CTLSPEC
-AG((r.c=0ub3_011) -> AF(t4.state=end))
-
-CTLSPEC
-AG((r.b=0ub2_10) -> AF(t5.state=end))
-CTLSPEC
-AG((r.b=0ub2_11) -> AF(t6.state=end))
-
-CTLSPEC
-AG((r.b=0ub2_11) -> AF(r.bit=-1))
-
-CTLSPEC
-AG((r.bit=-1) -> AF(r.state=end))
+AG((r.a=0ub1_1) -> AF(t2.state=end))
 
 
 -- verifichiamo se il reader rimane in deadlock
@@ -81,9 +47,9 @@ VAR
 
 -- collision detection
 DEFINE 
-  k := count((t1.state=transmit),(t2.state=transmit),
-             (t3.state=transmit),(t4.state=transmit),
-             (t5.state=transmit),(t6.state=transmit)); 
+  k := count((t1.state=transmit),(t2.state=transmit));
+          -- (t3.state=transmit),(t4.state=transmit),
+          -- (t5.state=transmit),(t6.state=transmit); 
 
 ASSIGN
 
@@ -125,12 +91,11 @@ ASSIGN
         case
           -- collision
           (state=collision_bit) & (bit=0)                     :  1;
-          (state=collision_bit) & (bit=1)                     :  2; 
-          (state=collision_bit) & (bit=2)                     :  3;
+       -- (state=collision_bit) & (bit=1)                     :  2; 
+       -- (state=collision_bit) & (bit=2)                     :  3;
           -- single
           -- implementazione alternativa...
-          (t1.state=end) & (t2.state=end) & (t3.state=end) &
-          (t4.state=end) & (t5.state=end) & (t6.state=end)    : -1;
+          (t1.state=end) & (t2.state=end)                     : -1;
        -- (state=single_bit) & (bit=2) & (b=0ub2_11)          : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
@@ -156,13 +121,24 @@ ASSIGN
         esac;
 
 
-MODULE tag(r,address,s_bit)
+MODULE tag(r,address,s_bit,t)
 
 VAR
  continue : boolean;
+ solved   : boolean; 
  confirm  : boolean;
+ conflict : 0..s_bit;
+ coin     : {0,1};
+ bit_e    : unsigned word[1];
  state    : {receive,transmit,collision,single,end};
- 
+
+-- count collision
+DEFINE
+  n := (solved) ? conflict + 1: conflict;
+
+-- bit's extraction 
+DEFINE
+  extraction := (state=end)? -1 : coin;
 
 ASSIGN
 
@@ -173,20 +149,42 @@ ASSIGN
            TRUE : continue;
         esac;
 
+    next(coin) := {0,1}
+
+    init(solved) := FALSE;
+    next(solved) := 
+        case
+           ((r.state=receive) & (r.bit=0)) | 
+           ((state=collision) & (extraction!=t.extraction)) : TRUE;
+           (state!=collision)                               : FALSE;
+           TRUE : solved;
+        esac;
+    
+    init(bit_e) := 0ub1_0;
+    next(bit_e) :=
+        case
+           (state=collision) & (extraction=0) : 0ub1_0;
+           (state=collision) & (extraction=1) : 0ub1_1;
+           TRUE                               : bit_e;
+        esac;
+
+    init(conflict) := 0;
+    next(conflict) :=
+        case
+           (solved) & (conflict < s_bit) : conflict + 1;
+           TRUE : conflict;
+        esac;
 
     init(confirm) := FALSE;
     next(confirm) :=
         case
            ((r.state=receive) & (r.bit=0)) |                                    
-           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - (s_bit - 1)), 1))) | 
-           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit - 2)), 2))) | 
-           ((r.state=receive) & (r.bit=3) & (r.c=resize(address >> (s_bit - (s_bit)),3)))      : TRUE;
-           (r.state!=receive)                                                                  : FALSE;
+           ((r.state=receive) & (r.bit=1)  & 
+           (r.a=resize(resize(address,n)::bit_e >> (s_bit - (s_bit - 1)), 1))) : TRUE;
+           (r.state!=receive)                                                  : FALSE;
            TRUE : confirm;
         esac; 
     
-    --NOTE: s_bit indica il numero massimo di bit valutati. 
-    --      Dunque, in r.bit=2 lo shift è zero.
      
     init(state) := receive;   
     next(state) :=
@@ -194,7 +192,7 @@ ASSIGN
            (state=receive) & (confirm)            : transmit;
            (r.state=collision) & (state=transmit) : collision;
            (r.state=single) & (state=transmit)    : single;
-           (state=collision)                      : receive;
+           (state=collision) & (solved)           : receive;
            (state=single)                         : end;
            TRUE : state;
         esac;
