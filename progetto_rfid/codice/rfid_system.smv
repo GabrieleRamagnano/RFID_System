@@ -1,9 +1,11 @@
 MODULE main
 
 VAR
- r : reader(t1,t2);
- t1: tag(r,0ub8_0000_0000,1,t2);
- t2: tag(r,0ub8_0000_0000,1,t1);
+ r : reader(t1,t2,t3,t4);
+ t1: tag(r,0ub8_0000_0000,2,t2,t3,t4);
+ t2: tag(r,0ub8_0000_0000,2,t1,t3,t4);
+ t3: tag(r,0ub8_0000_0000,2,t1,t2,t4);
+ t4: tag(r,0ub8_0000_0000,2,t1,t2,t3);
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
@@ -23,12 +25,14 @@ F(G(t1.state=collision))->G(F(r.state=idle))
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
 
-MODULE reader(t1,t2)
+MODULE reader(t1,t2,t3,t4)
 
 VAR
  continue: boolean;
  bit     : -1..8;
  a       : unsigned word[1];
+ b       : unsigned word[2];
+ c       : unsigned word[3];
  state   : {transmit,receive,idle,collision_bit,
             collision,single_bit,single,end};
 
@@ -50,8 +54,17 @@ ASSIGN
     next(a) := 
         case
            (bit=1) & (state=collision)           : 0ub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1;
            (bit=1) & (state=single) & (a=0ub1_0) : 0ub1_1;
            TRUE : a;
+        esac;
+    
+    init(b) := 0ub2_00;
+    next(b) := 
+        case
+           (bit=2) & (state=collision)                     : a :: 0ub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
+           TRUE : b;
         esac;
 
     init(bit) := 0;
@@ -59,10 +72,14 @@ ASSIGN
         case
           -- collision
           (state=collision_bit) & (bit=0)           :  1;
+          (state=collision_bit) & (bit=1)                     :  2; 
 
           -- single
-          (t1.state=end) & (t2.state=end)           : -1;
-          (state=single_bit) & (bit=1) & (a=0ub1_0) :  1;
+          (t1.state=end) & (t2.state=end) & (t3.state=end) & 
+          (t4.state=end)                                      : -1;
+          (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
           TRUE : bit;
         esac;
 
@@ -82,7 +99,7 @@ ASSIGN
         esac;
 
 
-MODULE tag(r,address,s_bit,t)
+MODULE tag(r,address,s_bit,t2,t3,t4)
 
 VAR
  continue : boolean;
@@ -113,8 +130,9 @@ ASSIGN
     next(solved) := 
         case
            ((r.state=receive) & (r.bit=0)) | 
-           ((state=collision) & (extraction!=extraction)) : TRUE;
-           (state!=collision)                             : FALSE;
+           ((state=collision) & (extraction!=t2.extraction)
+           (extraction!=t3.extraction) & (extraction!=t4.extraction)) : TRUE;
+           (state!=collision)                                         : FALSE;
            TRUE : solved;
         esac;
     
@@ -129,7 +147,7 @@ ASSIGN
     init(new_addr) := address;
     next(new_addr) := 
         case
-           (r.state=receive) & (r.bit=1) & (solved) : resize(address,7)::bit_e;
+           (r.state=receive) & (solved) : resize(address,7)::bit_e;
            TRUE : new_addr;
         esac;
 
@@ -140,7 +158,9 @@ ASSIGN
            (state=receive) & (
            ((r.state=receive) & (r.bit=0)) |  
            ((r.state=receive) & (r.bit=1) &
-           (r.a=resize(new_addr >> (s_bit - (s_bit - 1)), 1)))
+           (r.a=resize(new_addr >> (s_bit - (s_bit - 1)), 1))) |
+           ((r.state=receive) & (r.bit=2) & 
+           (r.b=resize(new_addr >> (s_bit - (s_bit - 2)), 2)))
            )                                                   : transmit;
            (r.state=collision) & (state=transmit)              : collision;
            (r.state=single) & (state=transmit)                 : single;
