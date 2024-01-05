@@ -19,7 +19,7 @@ AG(!(t1.state=end) & !(t2.state=end))
 CTLSPEC
 AG(!(t1.state=end))--/
 --CTLSPEC
---EF((t1.state=end) & (t2.state=end)) --& (t3.state=end) & (t4.state=end))
+--EF((t1.state=end) & (t2.state=end)) --& (t3.state=end) & (t4.state=end)
 --CTLSPEC
 --AG(!(r.state=end))
 /--LTLSPEC
