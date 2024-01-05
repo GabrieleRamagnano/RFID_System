@@ -161,15 +161,12 @@ ASSIGN
         case
            (state=receive) & (
            ((r.state=receive) & (r.bit=0)) |  
-           ((r.state=receive) & (r.bit=1) &
-           (r.a=resize(new_addr >> (s_bit - (s_bit - 1)), 1))) |
-           ((r.state=receive) & (r.bit=2) & 
-           (r.b=resize(new_addr >> (s_bit - (s_bit - 2)), 2)))
-           )                                                   : transmit;
-           (r.state=collision) & (state=transmit)              : collision;
-           (r.state=single) & (state=transmit)                 : single;
-           (state=collision) & (solved)                        : receive;
-           (state=single)                                      : end;
+           ((r.state=receive) & (r.bit=1) & (r.a=resize(new_addr >> (s_bit - (s_bit - 1)), 1))) |
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(new_addr >> (s_bit - (s_bit - 2)), 2))))  : transmit;
+           (r.state=collision) & (state=transmit)                                                 : collision;
+           (r.state=single) & (state=transmit)                                                    : single;
+           (state=collision) & (solved)                                                           : receive;
+           (state=single)                                                                         : end;
            TRUE : state;
         esac;
 
