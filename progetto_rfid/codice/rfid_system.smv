@@ -12,20 +12,20 @@ VAR
 
 
 -- hard test
---CTLSPEC
---AG(!t1.new_addr=0ub8_0000_0001)
 CTLSPEC
+AG(!t1.new_addr=0ub8_0000_0001)
+/--CTLSPEC
 AG(!(t1.state=end) & !(t2.state=end))
 CTLSPEC
-AG(!(t1.state=end))
+AG(!(t1.state=end))--/
 --CTLSPEC
---EF((t1.state=end) & (t2.state=end) & (t3.state=end) & (t4.state=end))
-CTLSPEC
-AG(!(r.state=end))
-LTLSPEC
+--EF((t1.state=end) & (t2.state=end)) --& (t3.state=end) & (t4.state=end))
+--CTLSPEC
+--AG(!(r.state=end))
+/--LTLSPEC
 F(G(t1.state=collision))->G(F(r.state=idle))
 CTLSPEC
-EF(t1.extraction!=t2.extraction)
+EF(t1.extraction!=t2.extraction)--/
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
