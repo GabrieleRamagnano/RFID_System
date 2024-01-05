@@ -118,7 +118,7 @@ VAR
 -- bit's extraction 
 DEFINE
   extraction := (state=end)? -1 : coin;
-
+  
 ASSIGN
 
     init(continue) := TRUE;
