@@ -18,7 +18,8 @@ CTLSPEC
 AG(!(r.state=end))
 LTLSPEC
 F(G(t1.state=collision))->G(F(r.state=idle))
-
+CTLSPEC
+EF(t1.extraction!=t2.extraction)
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
@@ -82,7 +83,7 @@ ASSIGN
         esac;
 
 
-MODULE tag(r,address,s_bit,t)
+MODULE tag(r,address,s_bit,t2)
 
 VAR
  continue : boolean;
@@ -113,8 +114,8 @@ ASSIGN
     next(solved) := 
         case
            ((r.state=receive) & (r.bit=0)) | 
-           ((state=collision) & (extraction!=extraction)) : TRUE;
-           (state!=collision)                             : FALSE;
+           ((state=collision) & (extraction!=t2.extraction)) : TRUE;
+           (state!=collision)                                : FALSE;
            TRUE : solved;
         esac;
     
