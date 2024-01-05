@@ -10,15 +10,26 @@ VAR
 
 
 -- hard test
-CTLSPEC
+/--CTLSPEC
 AG(!t1.new_addr=0ub8_0000_0001)
 CTLSPEC
 AG(!(t1.state=end) & !(t2.state=end))
 CTLSPEC
 AG(!(r.state=end))
 LTLSPEC
-F(G(t1.state=collision))->G(F(r.state=idle))
-
+F(G(t1.state=collision))->G(F(r.state=idle))--/
+/--LTLSPEC
+G(X(X(X(X(X(t1.state=collision))))))
+LTLSPEC
+G(X(X(X(X(X(X(t1.state=collision)))))))--/
+CTLSPEC
+EF(t2.state=end)
+CTLSPEC
+EF(t1.state=end)
+CTLSPEC
+EF(t1.new_addr=0ub8_0000_0001 & t2.new_addr=0ub8_0000_0000)
+CTLSPEC
+EF(t1.new_addr=0ub8_0000_0000)
 
 -- verifichiamo se il reader rimane in deadlock
 -- in una particolare configurazione
@@ -87,7 +98,6 @@ MODULE tag(r,address,s_bit,t)
 VAR
  continue : boolean;
  solved   : boolean; 
- confirm  : boolean;
  coin     : {0,1};
  new_addr : unsigned word[8];
  bit_e    : unsigned word[1];
@@ -112,8 +122,7 @@ ASSIGN
     init(solved) := FALSE;
     next(solved) := 
         case
-           ((r.state=receive) & (r.bit=0)) | 
-           ((state=collision) & (extraction!=extraction)) : TRUE;
+           (state=collision) & (extraction!=t.extraction) : TRUE;
            (state!=collision)                             : FALSE;
            TRUE : solved;
         esac;
@@ -121,15 +130,15 @@ ASSIGN
     init(bit_e) := 0ub1_0;
     next(bit_e) :=
         case
-           (state=collision) & (extraction=0) : 0ub1_0;
-           (state=collision) & (extraction=1) : 0ub1_1;
-           TRUE                               : bit_e;
+           (state=collision) & !(solved) & (extraction=0) : 0ub1_0;
+           (state=collision) & !(solved) & (extraction=1) : 0ub1_1;
+           TRUE                                           : bit_e;
         esac;
     
     init(new_addr) := address;
     next(new_addr) := 
         case
-           (r.state=receive) & (r.bit=1) & (solved) : resize(address,7)::bit_e;
+           (solved) : resize(address,7)::bit_e;
            TRUE : new_addr;
         esac;
 
@@ -137,21 +146,19 @@ ASSIGN
     init(state) := receive;   
     next(state) :=
         case
-           (state=receive) & (
-           ((r.state=receive) & (r.bit=0)) |  
-           ((r.state=receive) & (r.bit=1) &
-           (r.a=resize(new_addr >> (s_bit - (s_bit - 1)), 1)))
-           )                                                   : transmit;
-           (r.state=collision) & (state=transmit)              : collision;
-           (r.state=single) & (state=transmit)                 : single;
-           (state=collision) & (solved)                        : receive;
-           (state=single)                                      : end;
+           (state=receive) & 
+           (((r.state=receive) & (r.bit=0)) |  
+           ((r.state=receive) & (r.bit=1) & (r.a=bit_e))) : transmit;
+           (r.state=collision) & (state=transmit)                                                : collision;
+           (r.state=single) & (state=transmit)                                                   : single;
+           (state=collision) & (solved)                                                          : receive;
+           (state=single)                                     				         : end;
            TRUE : state;
         esac;
 
 
 
-    
+    -- resize(new_addr >> (s_bit - (s_bit - 1))
 
 
 
