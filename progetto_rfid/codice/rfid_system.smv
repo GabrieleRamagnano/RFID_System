@@ -1,27 +1,13 @@
 MODULE main
 
 VAR
- r : reader(t1,t2,t3,t4,t5,t6);
+ r : reader(t1,t2);
  t1: tag(r,0ub8_0000_0000,1,t2);
  t2: tag(r,0ub8_0000_0000,1,t1);
- /-- t3: tag(r,0ub8_0000_0010,3);
- t4: tag(r,0ub8_0000_0011,3);
- t5: tag(r,0ub8_0000_0100,3);
- t6: tag(r,0ub8_0000_0111,3); --/
 
 -- verifichiamo se tutti gli stati dei tag
 -- sono raggiungibili
 
-/--CTLSPEC
-EF(r.state=collision)
-CTLSPEC
-EF(r.state=single)
-CTLSPEC
-AG(EF(r.state=idle))--/
-/--CTLSPEC
-EF(r.state=end)
-CTLSPEC
-AG(EF(r.state=end))--/
 
 -- hard test
 CTLSPEC
@@ -39,8 +25,6 @@ VAR
  continue: boolean;
  bit     : -1..8;
  a       : unsigned word[1];
- b       : unsigned word[2];
- c       : unsigned word[3];
  state   : {transmit,receive,idle,collision_bit,
             collision,single_bit,single,end};
 
@@ -48,8 +32,6 @@ VAR
 -- collision detection
 DEFINE 
   k := count((t1.state=transmit),(t2.state=transmit));
-          -- (t3.state=transmit),(t4.state=transmit),
-          -- (t5.state=transmit),(t6.state=transmit); 
 
 ASSIGN
 
@@ -64,26 +46,8 @@ ASSIGN
     next(a) := 
         case
            (bit=1) & (state=collision)                     : 0ub1_0;
-           (bit=2) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1;
            (bit=1) & (state=single) & (a=0ub1_0)           : 0ub1_1;
            TRUE : a;
-        esac;
-    
-    init(b) := 0ub2_00;
-    next(b) := 
-        case
-           (bit=2) & (state=collision)                     : a :: 0ub1_0;
-           (bit=3) & (state=single) & (resize(c,1)=0ub1_1) : resize(c >> 1,2);
-           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
-           TRUE : b;
-        esac;
-    
-    init(c) := 0ub3_000;
-    next(c) := 
-        case
-           (bit=3) & (state=collision)                     : b :: 0ub1_0;
-           (bit=3) & (state=single) & (resize(c,1)=0ub1_0) : resize(c >> 1,2) :: 0ub1_1;
-           TRUE : c;
         esac;
 
     init(bit) := 0;
@@ -91,17 +55,9 @@ ASSIGN
         case
           -- collision
           (state=collision_bit) & (bit=0)                     :  1;
-       -- (state=collision_bit) & (bit=1)                     :  2; 
-       -- (state=collision_bit) & (bit=2)                     :  3;
           -- single
-          -- implementazione alternativa...
           (t1.state=end) & (t2.state=end)                     : -1;
-       -- (state=single_bit) & (bit=2) & (b=0ub2_11)          : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
-          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
-          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
-          (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_1) :  2;
-          (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_0) :  3;
           TRUE : bit;
         esac;
 
@@ -127,14 +83,11 @@ VAR
  continue : boolean;
  solved   : boolean; 
  confirm  : boolean;
- conflict : 0..s_bit;
+ --conflict : 0..s_bit;
  coin     : {0,1};
  bit_e    : unsigned word[1];
  state    : {receive,transmit,collision,single,end};
 
--- count collision
-DEFINE
-  n := (solved) ? conflict + 1: conflict;
 
 -- bit's extraction 
 DEFINE
@@ -149,12 +102,12 @@ ASSIGN
            TRUE : continue;
         esac;
 
-    next(coin) := {0,1}
+    next(coin) := {0,1};
 
     init(solved) := FALSE;
     next(solved) := 
         case
-           ((r.state=receive) & (r.bit=0)) | 
+           --((r.state=receive) & (r.bit=0)) | 
            ((state=collision) & (extraction!=t.extraction)) : TRUE;
            (state!=collision)                               : FALSE;
            TRUE : solved;
@@ -168,19 +121,13 @@ ASSIGN
            TRUE                               : bit_e;
         esac;
 
-    init(conflict) := 0;
-    next(conflict) :=
-        case
-           (solved) & (conflict < s_bit) : conflict + 1;
-           TRUE : conflict;
-        esac;
 
     init(confirm) := FALSE;
     next(confirm) :=
         case
            ((r.state=receive) & (r.bit=0)) |                                    
-           ((r.state=receive) & (r.bit=1)  & 
-           (r.a=resize(resize(address,n)::bit_e >> (s_bit - (s_bit - 1)), 1))) : TRUE;
+           ((r.state=receive) & (r.bit=1) & 
+           (r.a=resize(resize(address,7)::bit_e >> (s_bit - (s_bit - 1)), 1))) : TRUE;
            (r.state!=receive)                                                  : FALSE;
            TRUE : confirm;
         esac; 
