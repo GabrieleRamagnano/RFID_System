@@ -16,10 +16,19 @@ CTLSPEC
 AG(EF(r.state=idle))
 
 -- hard test
-CTLSPEC
+/--CTLSPEC
 EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
    t5.state=end & t6.state=end & t7.state=end & t8.state=end &
-   r.state=end)
+   r.state=end)--/
+
+CTLSPEC
+EF(t1.state=end)
+CTLSPEC
+EF(t2.state=end)
+CTLSPEC
+EF(t3.state=end)
+CTLSPEC
+EF(t4.state=end)
 
 
 MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
