@@ -1,0 +1,183 @@
+MODULE main
+
+VAR
+ r : reader(t1,t2,t3,t4);
+ t1: tag(r,0ub8_0000_0000,2,t2,t3,t4);
+ t2: tag(r,0ub8_0000_0000,2,t1,t3,t4);
+ t3: tag(r,0ub8_0000_0000,2,t1,t2,t4);
+ t4: tag(r,0ub8_0000_0000,2,t1,t2,t3);
+
+-- verifichiamo se tutti gli stati dei tag
+-- sono raggiungibili
+
+
+-- hard test
+/--LTLSPEC
+F(G(t1.state=collision))->G(F(r.state=idle))--/
+/--LTLSPEC
+G(X(X(X(X(X(t1.state=collision))))))
+LTLSPEC
+G(X(X(X(X(X(X(t1.state=collision)))))))--/
+
+CTLSPEC
+EF(t2.state=end)
+CTLSPEC
+EF(t1.state=end)
+CTLSPEC
+EF(t3.state=end)
+CTLSPEC
+EF(t4.state=end)
+CTLSPEC
+EF(t1.new_addr=0ub8_0000_0001 & t2.new_addr=0ub8_0000_0000)
+CTLSPEC
+EF(t1.new_addr=0ub8_0000_0000)
+CTLSPEC
+AG(!(r.state=end))
+
+-- verifichiamo se il reader rimane in deadlock
+-- in una particolare configurazione
+
+MODULE reader(t1,t2,t3,t4)
+
+VAR
+ continue: boolean;
+ bit     : -1..8;
+ a       : unsigned word[1];
+ b       : unsigned word[2];
+ state   : {transmit,receive,idle,collision_bit,
+            collision,single_bit,single,end};
+
+
+-- collision detection
+DEFINE 
+  k := count((t1.state=transmit),(t2.state=transmit),
+             (t3.state=transmit),(t4.state=transmit)); 
+
+ASSIGN
+
+    init(continue) := TRUE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+           TRUE : continue;
+        esac;
+
+    init(a) := 0ub1_0;
+    next(a) := 
+        case
+           (bit=1) & (state=collision)           : 0ub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1;
+           (bit=1) & (state=single) & (a=0ub1_0) : 0ub1_1;
+           TRUE : a;
+        esac;
+    
+    init(b) := 0ub2_00;
+    next(b) := 
+        case
+           (bit=2) & (state=collision)                     : a :: 0ub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
+           TRUE : b;
+        esac;
+
+    init(bit) := 0;
+    next(bit) :=
+        case
+          -- collision
+          (state=collision_bit) & (bit=0)                     :  1;
+          (state=collision_bit) & (bit=1)                     :  2; 
+
+          -- single
+          (t1.state=end) & (t2.state=end) & (t3.state=end) & 
+          (t4.state=end)                                      : -1;
+          (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
+          TRUE : bit;
+        esac;
+
+
+    init(state) := transmit;
+    next(state) :=
+        case
+          (continue=TRUE) & (state=transmit)                : receive;
+          (k=0) & (state=receive)                           : idle;
+          (k>=2) & ((state=receive) | (state=idle))         : collision_bit;
+          (k=1) & ((state=receive) | (state=idle))          : single_bit;
+          (state=collision_bit)                             : collision;
+          (state=single_bit)                                : single;
+          (bit=-1) & ((state=idle) | (state=single))        : end;
+          (state=idle) | (state=collision) | (state=single) : transmit;
+          TRUE : state;
+        esac;
+
+
+MODULE tag(r,address,s_bit,t1,t2,t3)
+
+VAR
+ continue : boolean;
+ solved   : boolean; 
+ coin     : {0,1};
+ new_addr : unsigned word[8];
+ bit_e    : unsigned word[1];
+ state    : {receive,transmit,collision,single,end};
+
+
+-- bit's extraction 
+DEFINE
+  extraction := (state=end)? -1 : coin;
+
+ASSIGN
+
+    init(continue) := TRUE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+           TRUE : continue;
+        esac;
+
+    next(coin) := {0,1};
+
+    init(solved) := FALSE;
+    next(solved) := 
+        case
+           (state=collision) & (extraction!=t1.extraction) & 
+           (extraction!=t2.extraction) & (extraction!=t3.extraction) : TRUE;
+           (state!=collision)                                        : FALSE;
+           TRUE : solved;
+        esac;
+    
+    init(bit_e) := 0ub1_0;
+    next(bit_e) :=
+        case
+           (state=collision) & !(solved) & (extraction=0) : 0ub1_0;
+           (state=collision) & !(solved) & (extraction=1) : 0ub1_1;
+           TRUE                                           : bit_e;
+        esac;
+    
+    init(new_addr) := address;
+    next(new_addr) := 
+        case
+           (solved) : resize(address,7)::bit_e;
+           TRUE : new_addr;
+        esac;
+
+     
+    init(state) := receive;   
+    next(state) :=
+        case
+           (state=receive) & 
+           (((r.state=receive) & (r.bit=0)) |  
+           ((r.state=receive) & (r.bit=1) & (r.a=resize(new_addr >> (s_bit - (s_bit - 1)),1))) |
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(new_addr >> (s_bit - (s_bit)),2))))     : transmit;
+           (r.state=collision) & (state=transmit)                                               : collision;
+           (r.state=single) & (state=transmit)                                                  : single;
+           (state=collision) & (solved)                                                         : receive;
+           (state=single)                                                                       : end;
+           TRUE : state;
+        esac;
+
+
+
+
+
+ 

@@ -1,0 +1,189 @@
+MODULE main
+
+VAR
+ r : reader(t1,t2,t3,t4,t5,t6,t7,t8);
+ t1: tag(r,0ub8_0000_0000,5);
+ t2: tag(r,0ub8_0000_1000,5);
+ t3: tag(r,0ub8_0000_1100,5);
+ t4: tag(r,0ub8_0001_0000,5);
+ t5: tag(r,0ub8_0001_0100,5);
+ t6: tag(r,0ub8_0001_1100,5);
+ t7: tag(r,0ub8_0001_1110,5);
+ t8: tag(r,0ub8_0001_1111,5);
+
+
+CTLSPEC
+AG(EF(r.state=idle))
+
+-- hard test
+CTLSPEC
+EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
+   t5.state=end & t6.state=end & t7.state=end & t8.state=end &
+   r.state=end)
+
+
+MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
+
+VAR
+ continue: boolean;
+ bit     : -1..8;
+ a       : unsigned word[1];
+ b       : unsigned word[2];
+ c       : unsigned word[3];
+ d       : unsigned word[4];
+ e       : unsigned word[5];
+ state   : {transmit,receive,idle,collision_bit,
+            collision,single_bit,single,end};
+
+
+-- collision detection
+DEFINE 
+  k := count((t1.state=transmit),(t2.state=transmit),
+             (t3.state=transmit),(t4.state=transmit),
+             (t5.state=transmit),(t6.state=transmit),
+             (t7.state=transmit),(t8.state=transmit)); 
+
+ASSIGN
+
+    init(continue) := TRUE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+           TRUE : continue;
+        esac;
+
+    init(a) := 0ub1_0;
+    next(a) := 
+        case
+           (bit=1) & (state=collision)                     : 0ub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1;
+           (bit=1) & (state=single) & (a=0ub1_0)           : 0ub1_1;
+           TRUE : a;
+        esac;
+    
+    init(b) := 0ub2_00;
+    next(b) := 
+        case
+           (bit=2) & (state=collision)                     : a :: 0ub1_0;
+           (bit=3) & (state=single) & (resize(c,1)=0ub1_1) : resize(c >> 1,2);
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
+           TRUE : b;
+        esac;
+    
+    init(c) := 0ub3_000;
+    next(c) := 
+        case
+           (bit=3) & (state=collision)                     : b :: 0ub1_0;
+           (bit=4) & (state=single) & (resize(d,1)=0ub1_1) : resize(d >> 1,3);
+           (bit=3) & (state=single) & (resize(c,1)=0ub1_0) : resize(c >> 1,2) :: 0ub1_1;
+           TRUE : c;
+        esac;
+
+    init(d) := 0ub4_0000;
+    next(d) := 
+        case
+           (bit=4) & (state=collision)                     : c :: 0ub1_0;
+           (bit=5) & (state=single) & (resize(e,1)=0ub1_1) : resize(e >> 1,4);
+           (bit=4) & (state=single) & (resize(d,1)=0ub1_0) : resize(d >> 1,3) :: 0ub1_1;
+           TRUE : d;
+        esac;
+
+    init(e) := 0ub5_00000;
+    next(e) := 
+        case
+           (bit=5) & (state=collision)                     : d :: 0ub1_0;
+           (bit=5) & (state=single) & (resize(e,1)=0ub1_0) : resize(e >> 1,4) :: 0ub1_1;
+           TRUE : e;
+        esac;
+
+    init(bit) := 0;
+    next(bit) :=
+        case
+          -- collision
+          (state=collision_bit) & (bit=0)                     :  1;
+          (state=collision_bit) & (bit=1)                     :  2; 
+          (state=collision_bit) & (bit=2)                     :  3;
+          (state=collision_bit) & (bit=3)                     :  4;
+          (state=collision_bit) & (bit=4)                     :  5;
+
+          -- single
+          (t1.state=end) & (t2.state=end) & (t3.state=end) &
+          (t4.state=end) & (t5.state=end) & (t6.state=end) &
+          (t7.state=end) & (t8.state=end)                     : -1;
+          (state=single_bit) & (bit=1) & (a=0ub1_0)           :  1;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1) :  1;
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0) :  2;
+          (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_1) :  2;
+          (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_0) :  3;
+          (state=single_bit) & (bit=4) & (resize(d,1)=0ub1_1) :  3;
+          (state=single_bit) & (bit=4) & (resize(d,1)=0ub1_0) :  4;
+          (state=single_bit) & (bit=5) & (resize(e,1)=0ub1_1) :  4;
+          (state=single_bit) & (bit=5) & (resize(e,1)=0ub1_0) :  5;
+          TRUE : bit;
+        esac;
+
+
+    init(state) := transmit;
+    next(state) :=
+        case
+          (continue=TRUE) & (state=transmit)                : receive;
+          (k=0) & (state=receive)                           : idle;
+          (k>=2) & ((state=receive) | (state=idle))         : collision_bit;
+          (k=1) & ((state=receive) | (state=idle))          : single_bit;
+          (state=collision_bit)                             : collision;
+          (state=single_bit)                                : single;
+          (bit=-1) & ((state=idle) | (state=single))        : end;
+          (state=idle) | (state=collision) | (state=single) : transmit;
+          TRUE : state;
+        esac;
+
+
+MODULE tag(r,address,s_bit)
+
+VAR
+ continue : boolean;
+ confirm  : boolean;
+ state    : {receive,transmit,collision,single,end};
+ 
+
+ASSIGN
+
+    init(continue) := TRUE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+           TRUE : continue;
+        esac;
+
+
+    init(confirm) := FALSE;
+    next(confirm) :=
+        case
+           ((r.state=receive) & (r.bit=0)) |                                    
+           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - (s_bit - 1)), 1))) | 
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit - 2)), 2))) | 
+           ((r.state=receive) & (r.bit=3) & (r.c=resize(address >> (s_bit - (s_bit - 3)), 3))) |
+           ((r.state=receive) & (r.bit=4) & (r.d=resize(address >> (s_bit - (s_bit - 4)), 4))) |
+           ((r.state=receive) & (r.bit=5) & (r.e=resize(address >> (s_bit - (s_bit)), 5)))     : TRUE;
+           (r.state!=receive)                                                                  : FALSE;
+           TRUE : confirm;
+        esac; 
+     
+    init(state) := receive;   
+    next(state) :=
+        case
+           (state=receive) & (confirm)            : transmit;
+           (r.state=collision) & (state=transmit) : collision;
+           (r.state=single) & (state=transmit)    : single;
+           (state=collision)                      : receive;
+           (state=single)                         : end;
+           TRUE : state;
+        esac;
+
+
+
+    
+
+
+
+ 

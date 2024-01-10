@@ -47,8 +47,9 @@ VAR
  a       : unsigned word[1];
  b       : unsigned word[2];
  c       : unsigned word[3];
- state   : {transmit,receive,idle,collision_bit,
-            collision,single_bit,single,end};
+ while   : {alt,repeat,out}
+ state   : {transmit,receive,idle,collision_bit,collision,
+            single_bit,single_while,single,end};
 
 
 -- collision detection
@@ -69,26 +70,26 @@ ASSIGN
     init(a) := 0ub1_0;
     next(a) := 
         case
-           (bit=1) & (state=collision)                     : 0ub1_0;
-           (bit=2) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1;
-           (bit=1) & (state=single) & (a=0ub1_0)           : 0ub1_1;
+           (bit=1) & (state=collision)                           : 0ub1_0;
+           (bit=2) & (state=single_while) & (resize(b,1)=0ub1_1) : 0ub1_1;
+           (bit=1) & (state=single_while) & (a=0ub1_0)           : 0ub1_1;
            TRUE : a;
         esac;
     
     init(b) := 0ub2_00;
     next(b) := 
         case
-           (bit=2) & (state=collision)                     : a :: 0ub1_0;
-           (bit=3) & (state=single) & (resize(c,1)=0ub1_1) : resize(c >> 1,2);
-           (bit=2) & (state=single) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
+           (bit=2) & (state=collision)                           : a :: 0ub1_0;
+           (bit=3) & (state=single_while) & (resize(c,1)=0ub1_1) : resize(c >> 1,2);
+           (bit=2) & (state=single_while) & (resize(b,1)=0ub1_0) : resize(b >> 1,1) :: 0ub1_1;
            TRUE : b;
         esac;
     
     init(c) := 0ub3_000;
     next(c) := 
         case
-           (bit=3) & (state=collision)                     : b :: 0ub1_0;
-           (bit=3) & (state=single) & (resize(c,1)=0ub1_0) : resize(c >> 1,2) :: 0ub1_1;
+           (bit=3) & (state=collision)                           : b :: 0ub1_0;
+           (bit=3) & (state=single_while) & (resize(c,1)=0ub1_0) : resize(c >> 1,2) :: 0ub1_1;
            TRUE : c;
         esac;
 
@@ -111,6 +112,16 @@ ASSIGN
           TRUE : bit;
         esac;
 
+    init(while) := alt;
+    next(while) :=
+        case
+           (single_while) & (bit=1)                             : out;
+           (single_while) & (bit=2) & (resize(b,1)=0ub1_0)      : repeat;
+           (single_while) & (bit=2) & (resize(c >> 1,1)=0ub1_1) : repeat;
+           (single_while) & (bit=3)                             : out;
+           TRUE                                                 : alt;
+        esac;
+
 
     init(state) := transmit;
     next(state) :=
@@ -120,7 +131,9 @@ ASSIGN
           (k>=2) & ((state=receive) | (state=idle))         : collision_bit;
           (k=1) & ((state=receive) | (state=idle))          : single_bit;
           (state=collision_bit)                             : collision;
-          (state=single_bit)                                : single;
+          (state=single_bit)                                : single_while;
+          (while=repeat)                                    : single_bit;
+          (while=out)                                       : single;
           (bit=-1) & ((state=idle) | (state=single))        : end;
           (state=idle) | (state=collision) | (state=single) : transmit;
           TRUE : state;
