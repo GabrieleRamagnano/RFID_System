@@ -26,7 +26,7 @@ AG(EF(r.state=end))--/
 CTLSPEC
 EF(t1.state=end)
 CTLSPEC
-EG(t2.state=end)
+EF(t2.state=end)
 CTLSPEC
 EF(t3.state=end)
 CTLSPEC
@@ -37,12 +37,17 @@ CTLSPEC
 EF(t6.state=end)
 
 CTLSPEC
---AG((r.while=repeat) -> EF(r.state=end))
+AG((r.while=repeat) -> EF(r.state=end))
+CTLSPEC
 EF(r.while=repeat)
 CTLSPEC
 AG(r.b!=0ub2_01)
 CTLSPEC
 EF(r.while=repeat & r.b=0ub2_00)
+CTLSPEC
+AG((t2.state=end) -> EF(r.b=0ub2_01))
+CTLSPEC
+EF(r.b=0ub2_01)
 
 MODULE reader(t1,t2,t3,t4,t5,t6)
 
@@ -179,11 +184,11 @@ ASSIGN
     init(state) := receive;   
     next(state) :=
         case
-           (state=receive) & (confirm)            : transmit;
-           (r.state=collision) & (state=transmit) : collision;
-           (r.state=single) & (state=transmit)    : single;
-           (state=collision)                      : receive;
-           (state=single)                         : end;
+           (state=receive) & (confirm)             : transmit;
+           (r.state=collision) & (state=transmit)  : collision;
+           (r.state=single_bit) & (state=transmit) : single;
+           (state=collision)                       : receive;
+           (state=single)                          : end;
            TRUE : state;
         esac;
 
