@@ -122,8 +122,8 @@ ASSIGN
           (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_11) : 1;
           (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_01) : 2;
           
-       -- (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_1) :  2;
-       -- (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_0) :  3;
+       -- (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_1) :  2; -- nein
+       -- (state=single_bit) & (bit=3) & (resize(c,1)=0ub1_0) :  3; -- nein
     
           TRUE : bit;
         esac;
