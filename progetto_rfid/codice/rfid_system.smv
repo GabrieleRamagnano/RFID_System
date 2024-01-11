@@ -91,7 +91,7 @@ ASSIGN
         case
            (bit=2) & (state=collision)                      : a :: 0ub1_0;
            (bit=2) & (state=single) & (resize(b,1)=0ub1_0)  : resize(b >> 1,1) :: 0ub1_1;
-           (bit=2) & (state=single) & (resize(c,2)=0ub2_01) : resize(c >> 2,1) :: 0ub1_1;
+          -- (bit=2) & (state=single) & (resize(c,2)=0ub2_01) : resize(c >> 2,1) :: 0ub1_1;
            TRUE : b;
         esac;
     
