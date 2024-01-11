@@ -16,6 +16,12 @@ CTLSPEC
 AG(EF(r.state=idle))
 CTLSPEC
 AG(r.state!=idle)
+LTLSPEC
+G(F(r.state=idle)) -> G(F(r.state=transmit))
+LTLSPEC
+G(X(X(r.state=idle)) -> F((r.state=idle)))
+LTLSPEC
+G(X(X(r.state=idle)) -> F(G((r.state=idle))))
 
 -- hard test
 /--CTLSPEC
@@ -186,13 +192,13 @@ ASSIGN
     init(confirm) := FALSE;
     next(confirm) :=
         case
-           ((r.state=receive) & (r.bit=0)) |                                    
-           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - 1), 1))) | 
-           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - 2), 2))) | 
-           ((r.state=receive) & (r.bit=3) & (r.c=resize(address >> (s_bit - 3), 3))) |
-           ((r.state=receive) & (r.bit=4) & (r.d=resize(address >> (s_bit - 4), 4))) |
-           ((r.state=receive) & (r.bit=5) & (r.e=resize(address >> (s_bit - s_bit), 5))) : TRUE;
-           (r.state!=receive)                                                            : FALSE;
+           ((r.state=transmit) & (r.bit=0)) |                                    
+           ((r.state=transmit) & (r.bit=1) & (r.a=resize(address >> (s_bit - 1), 1))) | 
+           ((r.state=transmit) & (r.bit=2) & (r.b=resize(address >> (s_bit - 2), 2))) | 
+           ((r.state=transmit) & (r.bit=3) & (r.c=resize(address >> (s_bit - 3), 3))) |
+           ((r.state=transmit) & (r.bit=4) & (r.d=resize(address >> (s_bit - 4), 4))) |
+           ((r.state=transmit) & (r.bit=5) & (r.e=resize(address >> (s_bit - s_bit), 5))) : TRUE;
+           (r.state!=transmit)                                                            : FALSE;
            TRUE : confirm;
         esac; 
      
