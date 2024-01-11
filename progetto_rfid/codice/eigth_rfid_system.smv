@@ -24,14 +24,12 @@ EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
 -- Non deve accadere mai durante una situazione di collisione che uno 
 -- dei tag venga indivituato.
 LTLSPEC
-G(!((r.state=collision) & ((t1.state=single) | (t2.state=single) | (t3.state=single) |
-                           (t4.state=single) | (t5.state=single) | (t6.state=single) |
-                           (t7.state=single) | (t8.state=single) | )))
+G(!((r.state=collision) & (t1.state=single)))
 
 -- proprietà di raggiungibilità condizionale
 -- Il reader deve terminare solo dopo che tutti tag siano stati indivituati.
-((t1.state=end) & (t2.state=end) & (t3.state=end) & (t4.state=end) & (t5.state=end) & 
-(t6.state=end) & (t7.state=end) & (t8.state=end))U(r.state=end)  
+LTLSPEC
+(r.bit!=-1)U(X(X(X(X(r.state=end)))))  
 
 -- proprietà raggiungibilità composta
 -- Per come sono stati inseriti gli indirizzi nei tag, ad un certo punto
@@ -200,11 +198,11 @@ ASSIGN
            ((r.bit=2) & (r.b=resize(address >> (height - 2), 2))) | 
            ((r.bit=3) & (r.c=resize(address >> (height - 3), 3))) |
            ((r.bit=4) & (r.d=resize(address >> (height - 4), 4))) |
-           ((r.bit=5) & (r.e=resize(address >> (height - s_bit), 5)))) : transmit;
-           (r.state=collision_bit) & (state=transmit)                  : collision;
-           (r.state=single_bit) & (state=transmit)                     : single;
-           (state=collision)                                           : receive;
-           (state=single)                                              : end;
+           ((r.bit=5) & (r.e=resize(address >> (height - height), 5)))) : transmit;
+           (r.state=collision_bit) & (state=transmit)                   : collision;
+           (r.state=single_bit) & (state=transmit)                      : single;
+           (state=collision)                                            : receive;
+           (state=single)                                               : end;
            TRUE : state;
         esac;
 
