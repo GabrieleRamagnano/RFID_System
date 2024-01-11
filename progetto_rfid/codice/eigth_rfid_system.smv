@@ -39,12 +39,12 @@ CTLSPEC
 EF(t4.state=end)
 CTLSPEC
 EF(t5.state=end)
-/--CTLSPEC
+CTLSPEC
 EF(t6.state=end)
 CTLSPEC
 EF(t7.state=end)
 CTLSPEC
-EF(t8.state=end)--/
+EF(t8.state=end)
 
 
 MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
@@ -132,7 +132,8 @@ ASSIGN
         
           -- single
           (t1.state=end) & (t2.state=end) & (t3.state=end) &
-          (t4.state=end) & (t5.state=end) & (t6.state=end)       : -1;
+          (t4.state=end) & (t5.state=end) & (t6.state=end) &
+          (t7.state=end) & (t8.state=end)                        : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)              :  1; 
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1)    :  1; 
        -- (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0)    :  2; 
@@ -159,14 +160,14 @@ ASSIGN
     init(state) := transmit;
     next(state) :=
         case
-          (continue=TRUE) & (state=transmit)                : receive;
-          (k=0) & (state=receive)                           : idle;
-          (k>=2) & ((state=receive) | (state=idle))         : collision_bit;
-          (k=1) & ((state=receive) | (state=idle))          : single_bit;
-          (state=collision_bit)                             : collision;
-          (state=single_bit)                                : single;
-          (bit=-1) & ((state=idle) | (state=single))        : end;
-          (state=idle) | (state=collision) | (state=single) : transmit;
+          (continue=TRUE) & (state=transmit)                        : receive;
+          (k=0) & (state=receive)                                   : idle;
+          (k>=2) & ((state=receive) | (state=idle))                 : collision_bit;
+          ((k=1) & ((state=receive) | (state=idle))) | (state=idle) : single_bit;
+          (state=collision_bit)                                     : collision;
+          (state=single_bit)                                        : single;
+          (bit=-1) & ((state=idle) | (state=single))                : end;
+          (state=idle) | (state=collision) | (state=single)         : transmit;
           TRUE : state;
         esac;
 
