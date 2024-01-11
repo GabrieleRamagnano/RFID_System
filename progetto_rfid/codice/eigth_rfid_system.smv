@@ -16,6 +16,12 @@ CTLSPEC
 AG(EF(r.state=idle))
 CTLSPEC
 AG(r.state!=idle)
+LTLSPEC
+G(F(r.state=idle)) -> G(F(r.state=transmit))
+LTLSPEC
+G(X(X(r.state=idle)) -> F((r.state=idle)))
+LTLSPEC
+G(X(X(r.state=idle)) -> F(G((r.state=idle))))
 
 -- hard test
 /--CTLSPEC
