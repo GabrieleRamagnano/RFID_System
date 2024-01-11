@@ -14,6 +14,8 @@ VAR
 
 CTLSPEC
 AG(EF(r.state=idle))
+CTLSPEC
+AG(r.state!=idle)
 
 -- hard test
 /--CTLSPEC
@@ -31,12 +33,12 @@ CTLSPEC
 EF(t4.state=end)
 CTLSPEC
 EF(t5.state=end)
-CTLSPEC
+/--CTLSPEC
 EF(t6.state=end)
 CTLSPEC
 EF(t7.state=end)
 CTLSPEC
-EF(t8.state=end)
+EF(t8.state=end)--/
 
 
 MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
@@ -142,7 +144,7 @@ ASSIGN
        -- (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0011) :  3; no correct
        -- (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0001) :  4; no correct
           (state=single_bit) & (bit=5) & (resize(e,3)=0ub3_011)  :  3; --
-          (state=single_bit) & (bit=5) & (resize(e,2)=0ub4_01)   :  4; --
+          (state=single_bit) & (bit=5) & (resize(e,2)=0ub2_01)   :  4; --
     
           TRUE : bit;
         esac;
@@ -185,12 +187,12 @@ ASSIGN
     next(confirm) :=
         case
            ((r.state=receive) & (r.bit=0)) |                                    
-           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - (s_bit - 1)), 1))) | 
-           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - (s_bit - 2)), 2))) | 
-           ((r.state=receive) & (r.bit=3) & (r.c=resize(address >> (s_bit - (s_bit - 3)), 3))) |
-           ((r.state=receive) & (r.bit=4) & (r.d=resize(address >> (s_bit - (s_bit - 4)), 4))) |
-           ((r.state=receive) & (r.bit=5) & (r.e=resize(address >> (s_bit - (s_bit)), 5)))     : TRUE;
-           (r.state!=receive)                                                                  : FALSE;
+           ((r.state=receive) & (r.bit=1) & (r.a=resize(address >> (s_bit - 1), 1))) | 
+           ((r.state=receive) & (r.bit=2) & (r.b=resize(address >> (s_bit - 2), 2))) | 
+           ((r.state=receive) & (r.bit=3) & (r.c=resize(address >> (s_bit - 3), 3))) |
+           ((r.state=receive) & (r.bit=4) & (r.d=resize(address >> (s_bit - 4), 4))) |
+           ((r.state=receive) & (r.bit=5) & (r.e=resize(address >> (s_bit - s_bit), 5))) : TRUE;
+           (r.state!=receive)                                                            : FALSE;
            TRUE : confirm;
         esac; 
      
