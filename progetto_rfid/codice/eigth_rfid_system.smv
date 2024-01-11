@@ -12,53 +12,64 @@ VAR
  t8: tag(r,0ub8_0001_1111,5);
 
 
-CTLSPEC
-AG(EF(r.state=idle))
-CTLSPEC
-AG(r.state!=idle)
-LTLSPEC
-G(F(r.state=idle)) -> G(F(r.state=transmit))
-LTLSPEC
-G(X(X(r.state=idle)) -> F((r.state=idle)))
-LTLSPEC
-G(X(X(r.state=idle)) -> F(G((r.state=idle))))
 
--- hard test
+-- proprietà di raggiungibilità
+-- Il reader e tutti i tag devono giungere allo stato di terminazione. 
+-- Utilizziamo tale proprietà per verificare che il sistema termini.
 CTLSPEC
 EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
-   t5.state=end & t6.state=end & t7.state=end & t8.state=end &
-   r.state=end)
+   t5.state=end & t6.state=end & t7.state=end & t8.state=end & r.state=end)
 
-CTLSPEC
-EF(t1.state=end)
-CTLSPEC
-EF(t2.state=end)
-CTLSPEC
-EF(t3.state=end)
-CTLSPEC
-EF(t4.state=end)
-CTLSPEC
-EF(t5.state=end)
-CTLSPEC
-EF(t6.state=end)
-CTLSPEC
-EF(t7.state=end)
-CTLSPEC
-EF(t8.state=end)
+-- proprietà di irraggiungibilità
+-- Non deve accadere mai durante una situazione di collisione che uno 
+-- dei tag venga indivituato.
+LTLSPEC
+G(!((r.state=collision) & ((t1.state=single) | (t2.state=single) | (t3.state=single) |
+                           (t4.state=single) | (t5.state=single) | (t6.state=single) |
+                           (t7.state=single) | (t8.state=single) | )))
+
+-- proprietà di raggiungibilità condizionale
+-- Il reader deve terminare solo dopo che tutti tag siano stati indivituati.
+((t1.state=end) & (t2.state=end) & (t3.state=end) & (t4.state=end) & (t5.state=end) & 
+(t6.state=end) & (t7.state=end) & (t8.state=end))U(r.state=end)  
+
+-- proprietà raggiungibilità composta
+-- Per come sono stati inseriti gli indirizzi nei tag, ad un certo punto
+-- dell'esecuzione dobbiamo avere prima uno stato di IDLE e qualche passo
+-- più avanti una collisione.
+LTLSPEC
+F((r.state=idle) & X(X(X(X(X(X(r.state=collision)))))))
+
+-- proprietà di liveness
+-- Tutte le volte che più tag inviano una richiesta al reader, quest'ultimo
+-- notifica una collisione.
+LTLSPEC
+G(((t1.state=transmit) & (t2.state=transmit) & (t3.state=transmit)) -> F(r.state=collision))
+
+-- Tutte le volte che un singolo tag invia una richiesta al reader, quest'ultimo
+-- notifica una single.
+LTLSPEC
+G(((t2.state=transmit) | (t4.state=transmit) | (t7.state=transmit)) -> F(r.state=single))
+
+-- proprietà di fairness forte
+-- Se un tag è frequentemente in stato di receive, allora il reader proverà
+-- a trasmettere.
+LTLSPEC
+G(F(t8.state=receive)) -> G(F(r.state=transmit))
 
 
 MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
 
 VAR
- continue: boolean;
- bit     : -1..8;
- a       : unsigned word[1];
- b       : unsigned word[2];
- c       : unsigned word[3];
- d       : unsigned word[4];
- e       : unsigned word[5];
- state   : {transmit,receive,idle,collision_bit,
-            collision,single_bit,single,end};
+ continue : boolean;
+ bit      : -1..8;
+ a        : unsigned word[1];
+ b        : unsigned word[2];
+ c        : unsigned word[3];
+ d        : unsigned word[4];
+ e        : unsigned word[5];
+ state    : {transmit,receive,idle,collision_bit,
+             collision,single_bit,single,end};
 
 
 -- collision detection
@@ -164,7 +175,7 @@ ASSIGN
         esac;
 
 
-MODULE tag(r,address,s_bit)
+MODULE tag(r,address,height)
 
 VAR
  continue : boolean;
@@ -184,16 +195,16 @@ ASSIGN
     init(state) := receive;   
     next(state) :=
         case
-           (state=receive) & (r.state=transmit) & ((r.bit=0)     |                                                                           
-           ((r.bit=1) & (r.a=resize(address >> (s_bit - 1), 1))) | 
-           ((r.bit=2) & (r.b=resize(address >> (s_bit - 2), 2))) | 
-           ((r.bit=3) & (r.c=resize(address >> (s_bit - 3), 3))) |
-           ((r.bit=4) & (r.d=resize(address >> (s_bit - 4), 4))) |
-           ((r.bit=5) & (r.e=resize(address >> (s_bit - s_bit), 5)))) : transmit;
-           (r.state=collision_bit) & (state=transmit)                 : collision;
-           (r.state=single_bit) & (state=transmit)                    : single;
-           (state=collision)                                          : receive;
-           (state=single)                                             : end;
+           (state=receive) & (r.state=transmit) & ((r.bit=0)      |                                                                           
+           ((r.bit=1) & (r.a=resize(address >> (height - 1), 1))) | 
+           ((r.bit=2) & (r.b=resize(address >> (height - 2), 2))) | 
+           ((r.bit=3) & (r.c=resize(address >> (height - 3), 3))) |
+           ((r.bit=4) & (r.d=resize(address >> (height - 4), 4))) |
+           ((r.bit=5) & (r.e=resize(address >> (height - s_bit), 5)))) : transmit;
+           (r.state=collision_bit) & (state=transmit)                  : collision;
+           (r.state=single_bit) & (state=transmit)                     : single;
+           (state=collision)                                           : receive;
+           (state=single)                                              : end;
            TRUE : state;
         esac;
 
