@@ -57,7 +57,6 @@ VAR
  a       : unsigned word[1];
  b       : unsigned word[2];
  c       : unsigned word[3];
- while   : {alt,repeat,out};
  state   : {transmit,receive,idle,collision_bit,collision,
             single_bit,single,end};
 
