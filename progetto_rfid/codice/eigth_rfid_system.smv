@@ -24,10 +24,10 @@ LTLSPEC
 G(X(X(r.state=idle)) -> F(G((r.state=idle))))
 
 -- hard test
-/--CTLSPEC
+CTLSPEC
 EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
    t5.state=end & t6.state=end & t7.state=end & t8.state=end &
-   r.state=end)--/
+   r.state=end)
 
 CTLSPEC
 EF(t1.state=end)
@@ -118,7 +118,6 @@ ASSIGN
            TRUE : e;
         esac;
 
-    ---
 
     init(bit) := 0;
     next(bit) :=
@@ -136,22 +135,15 @@ ASSIGN
           (t7.state=end) & (t8.state=end)                        : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)              :  1; 
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1)    :  1; 
-       -- (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_0)    :  2; 
           (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_11)   :  1;
           (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_01)   :  2;
-
-          -- new rules
-          (state=single_bit) & (bit=4) & (resize(d,3)=0ub3_111)  :  1; --
-          (state=single_bit) & (bit=4) & (resize(d,3)=0ub3_011)  :  2; --
-       -- (state=single_bit) & (bit=4) & (resize(d,3)=0ub3_001)  :  3; no correct
-          (state=single_bit) & (bit=4) & (resize(d,2)=0ub2_01)   :  3; --
-
-          (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_1111) :  1; --
-          (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0111) :  2; --
-       -- (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0011) :  3; no correct
-       -- (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0001) :  4; no correct
-          (state=single_bit) & (bit=5) & (resize(e,3)=0ub3_011)  :  3; --
-          (state=single_bit) & (bit=5) & (resize(e,2)=0ub2_01)   :  4; --
+          (state=single_bit) & (bit=4) & (resize(d,3)=0ub3_111)  :  1; 
+          (state=single_bit) & (bit=4) & (resize(d,3)=0ub3_011)  :  2; 
+          (state=single_bit) & (bit=4) & (resize(d,2)=0ub2_01)   :  3; 
+          (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_1111) :  1; 
+          (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0111) :  2; 
+          (state=single_bit) & (bit=5) & (resize(e,3)=0ub3_011)  :  3; 
+          (state=single_bit) & (bit=5) & (resize(e,2)=0ub2_01)   :  4; 
     
           TRUE : bit;
         esac;
