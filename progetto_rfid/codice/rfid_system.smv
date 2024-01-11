@@ -81,7 +81,7 @@ ASSIGN
     next(a) := 
         case
            (bit=1) & (state=collision)                     : 0ub1_0;
-           (bit=1) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1; 
+        -- (bit=1) & (state=single) & (resize(b,1)=0ub1_1) : 0ub1_1; 
            (bit=1) & (state=single) & (a=0ub1_0)           : 0ub1_1;
            TRUE : a;
         esac;
