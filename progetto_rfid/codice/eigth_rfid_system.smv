@@ -1,3 +1,26 @@
+-- Progetto: Protocolli anti-collisione basati su alberi per tag RFID
+
+-- Introduzione
+-- Tra i tree-based protocols proposti nella specifica si è scelto di implementare quello più basilare: 
+-- Basic Tree Protocol. Nello specifico vengono adottate le seguenti soluzioni implementative:
+
+-- 1. La struttura dati utilizzata per rappresentare sia l'indirizzo della sonda inviata dal reader
+--    che i singoli indirizzi dei tag è unsigned word[.]. Ciò ha permesso, oltre ad una maggiore
+--    aderenza all'algoritmo originario, di poter manipolare più agevolmente un array di bit grazie 
+--    alle operazioni come count,shift e resize che il linguaggio mette a disposizione.
+
+-- 2. Il problema della "simmetria" dei tag è stato risolto adottando un approccio eslusivamente
+--    deterministico: ad ogni tag viene in partenza assegnato un indirizzo (si è scelta arbitrariamente
+--    una lunghezza massima di 8-bit) "scoprendo", ogni volta che si verifica una collisione, un bit alla 
+--    volta. Tale soluzione ha lo scopo di impegnare l'algoritmo di attraversamento dell'albero nella 
+--    maniera più esaustiva possibile. Con un approccio non-deterministico la complessità crescente non
+--    lo permetterebbe (in tempi accettabili).
+
+-- 3. Ogni riceve come paramentro in ingresso "height", un intero che specifica qual è la profondità massima
+--    dell'albero che l'algoritmo di ricerca può raggiungere. Tale aggiunta è necessaria nello sviluppo della
+--    soluzione deterministica al processo di randomizzazione dei tag. 
+
+
 MODULE main
 
 VAR
