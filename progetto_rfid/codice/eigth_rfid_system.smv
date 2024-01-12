@@ -24,9 +24,9 @@ CTLSPEC
 AG(EF(r.state=end))
 
 -- 2. Ipotizziamo che, ad un certo punto dell'esecuzione, un tag interrompa
-      la comunicazione con il reader a causa di un malfunzionamento. Per 
-      simulare questo evento modifichiamo il parametro "height" in maniera
-      tale che la generazione del bit da aggiungere all' indirizzo si interrompa.
+--    la comunicazione con il reader a causa di un malfunzionamento. Per 
+--    simulare questo evento modifichiamo il parametro "height" in maniera
+--    tale che la generazione del bit da aggiungere all' indirizzo si interrompa.
 -- t8: tag(r,0ub8_0001_1111,4);
 -- Nota: nell'indirizzo scelto, il valore del bit significativo più a sinistra che
 -- viene "estratto" non incide sul comportamento anomalo del tag ai primi livelli
