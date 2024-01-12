@@ -11,6 +11,34 @@ VAR
  t7: tag(r,0ub8_0001_1110,5);
  t8: tag(r,0ub8_0001_1111,5);
 
+-- Test anomalie
+
+-- 1. Ipotizziamo che per errore a due tag venga assegnato il medesimo 
+--    indirizzo. Come reagirà il sistema ?
+-- t4: tag(r,0ub8_0001_0000,5);
+-- t5: tag(r,0ub8_0001_0000,5);
+-- proprietà di raggiungibilità estesa
+-- In particolare, è possibile sempre raggiungere uno stato dove prima o
+-- o poi il sistema termina ?
+CTLSPEC
+AG(EF(r.state=end))
+
+-- 2. Ipotizziamo che, ad un certo punto dell'esecuzione, un tag interrompa
+      la comunicazione con il reader a causa di un malfunzionamento. Per 
+      simulare questo evento modifichiamo il parametro "height" in maniera
+      tale che la generazione del bit da aggiungere all' indirizzo si interrompa.
+-- t8: tag(r,0ub8_0001_1111,4);
+-- Nota: nell'indirizzo scelto, il valore del bit significativo più a sinistra che
+-- viene "estratto" non incide sul comportamento anomalo del tag ai primi livelli
+-- dell' albero.
+-- proprietà di raggiungibilità estesa
+-- Tale tag verrà prima o poi individuato ?
+CTLSPEC
+AG(EF(t8.state=end))
+-- E invece questo ?
+-- t7: tag(r,0ub8_0001_1110,4);
+CTLSPEC
+AG(EF(t7.state=end))
 
 
 -- proprietà di raggiungibilità
@@ -161,14 +189,14 @@ ASSIGN
     init(state) := transmit;
     next(state) :=
         case
-          (continue=TRUE) & (state=transmit)                : receive;
-          (k=0) & (state=receive)                           : idle;
-          (k>=2) & (state=receive)                          : collision_bit;
-          ((k=1) & (state=receive)) | (state=idle)          : single_bit;
-          (state=collision_bit)                             : collision;
-          (state=single_bit)                                : single;
-          (bit=-1) & ((state=idle) | (state=single))        : end;
-          (state=idle) | (state=collision) | (state=single) : transmit;
+          (continue=TRUE) & (state=transmit)                     : receive;
+          (k=0) & (state=receive)                                : idle;
+          (k>=2) & (state=receive)                               : collision_bit;
+          ((k=1) & (state=receive)) | ((state=idle) & (bit!=-1)) : single_bit;
+          (state=collision_bit)                                  : collision;
+          (state=single_bit)                                     : single;
+          (bit=-1) & ((state=idle) | (state=single))             : end;
+          (state=idle) | (state=collision) | (state=single)      : transmit;
           TRUE : state;
         esac;
 
