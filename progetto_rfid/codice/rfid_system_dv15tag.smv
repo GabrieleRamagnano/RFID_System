@@ -63,7 +63,7 @@ CTLSPEC
 EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
    t5.state=end & t6.state=end & t7.state=end & t8.state=end & 
    t9.state=end & t10.state=end & t11.state=end & t12.state=end & 
-   t13.state=end & t14.state=end & t15.state=end r.state=end)
+   t13.state=end & t14.state=end & t15.state=end & r.state=end)
 
 -- b. proprietà di irraggiungibilità
 -- Non deve accadere mai durante una situazione di collisione che uno 
@@ -102,7 +102,7 @@ LTLSPEC
 G(F(t15.state=receive)) -> G(F(r.state=transmit))
 
 
-MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
+MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8,t9,t10,t11,t12,t13,t14,t15);
 
 VAR
  continue : boolean;          -- condizione per l'esecuzione del corpo del while
@@ -117,23 +117,23 @@ VAR
                                                 -- receive      : si attende la risposta dei tag
                                                 -- idle         : nessuno dei tag ha inviato un segnale
                                                 -- collision_bit: si verifica una collisione (viene valutata la 
-                                                                  lunghezza dell'indirizzo per la prossima sonda)
+                                                --                lunghezza dell'indirizzo per la prossima sonda)
                                                 -- collision    : ancora in stato di collisione (viene generato
-                                                                  l'indirizzo per la prossima sonda)
+                                                --                l'indirizzo per la prossima sonda)
                                                 -- single_bit   : tag individuato (viene valutata la lunghezza 
-                                                                  dell'indirizzo per la prossima sonda)
+                                                --                dell'indirizzo per la prossima sonda)
                                                 -- single       : ancora in stato di single (viene generato
-                                                                  l'indirizzo per la prossima sonda)
+                                                --                l'indirizzo per la prossima sonda)
                                                 -- end          : il processo reader termina
 
 
 
 -- verifica delle collisioni
 DEFINE 
-  k := count((t1.state=transmit),(t2.state=transmit),
-             (t3.state=transmit),(t4.state=transmit),
-             (t5.state=transmit),(t6.state=transmit),
-             (t7.state=transmit),(t8.state=transmit)); 
+  k := count((t1.state=transmit),(t2.state=transmit),(t3.state=transmit),(t4.state=transmit),
+             (t5.state=transmit),(t6.state=transmit),(t7.state=transmit),(t8.state=transmit),
+             (t9.state=transmit),(t10.state=transmit),(t11.state=transmit),(t12.state=transmit),
+             (t13.state=transmit),(t14.state=transmit),(t15.state=transmit)); 
 
 ASSIGN
 
@@ -201,7 +201,10 @@ ASSIGN
           -- il ciclo while presente nella specifica viene "srotolato"
           (t1.state=end) & (t2.state=end) & (t3.state=end) &
           (t4.state=end) & (t5.state=end) & (t6.state=end) &
-          (t7.state=end) & (t8.state=end)                        : -1;
+          (t7.state=end) & (t8.state=end) & (t8.state=end) &    
+          (t9.state=end) & (t10.state=end) & (t11.state=end) &
+          (t12.state=end) & (t13.state=end) & (t14.state=end) &  
+          (t15.state=end)                                        : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)              :  1; 
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1)    :  1; 
           (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_11)   :  1;

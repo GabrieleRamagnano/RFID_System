@@ -92,13 +92,13 @@ VAR
                                                 -- receive      : si attende la risposta dei tag
                                                 -- idle         : nessuno dei tag ha inviato un segnale
                                                 -- collision_bit: si verifica una collisione (viene valutata la 
-                                                                  lunghezza dell'indirizzo per la prossima sonda)
+                                                --                lunghezza dell'indirizzo per la prossima sonda)
                                                 -- collision    : ancora in stato di collisione (viene generato
-                                                                  l'indirizzo per la prossima sonda)
+                                                --                l'indirizzo per la prossima sonda)
                                                 -- single_bit   : tag individuato (viene valutata la lunghezza 
-                                                                  dell'indirizzo per la prossima sonda)
+                                                --                dell'indirizzo per la prossima sonda)
                                                 -- single       : ancora in stato di single (viene generato
-                                                                  l'indirizzo per la prossima sonda)
+                                                --                l'indirizzo per la prossima sonda)
                                                 -- end          : il processo reader termina
 
 
@@ -174,8 +174,7 @@ ASSIGN
           -- single: ci si sposta sulla parte destra dell'albero. NOTA:
           -- il ciclo while presente nella specifica viene "srotolato"
           (t1.state=end) & (t2.state=end) & (t3.state=end) &
-          (t4.state=end) & (t5.state=end) & (t6.state=end) &
-          (t7.state=end) & (t8.state=end)                        : -1;
+          (t4.state=end) & (t5.state=end) & (t6.state=end)       : -1;
           (state=single_bit) & (bit=1) & (a=0ub1_0)              :  1; 
           (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1)    :  1; 
           (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_11)   :  1;
