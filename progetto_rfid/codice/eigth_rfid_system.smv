@@ -64,43 +64,44 @@ CTLSPEC
 AG(EF(t7.state=end))
 
 
--- proprietà di raggiungibilità
+-- a. proprietà di raggiungibilità
 -- Il reader e tutti i tag devono giungere allo stato di terminazione. 
 -- Utilizziamo tale proprietà per verificare che il sistema termini.
 CTLSPEC
 EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
    t5.state=end & t6.state=end & t7.state=end & t8.state=end & r.state=end)
 
--- proprietà di irraggiungibilità
+-- b. proprietà di irraggiungibilità
 -- Non deve accadere mai durante una situazione di collisione che uno 
 -- dei tag venga indivituato.
 LTLSPEC
 G(!((r.state=collision) & (t1.state=single)))
 
--- proprietà di raggiungibilità condizionale
+-- c. proprietà di raggiungibilità condizionale
 -- Il reader deve terminare solo dopo che tutti tag siano stati indivituati.
 LTLSPEC
 (r.bit!=-1)U(X(X(X(X(r.state=end)))))  
 
--- proprietà raggiungibilità composta
+-- d. proprietà raggiungibilità composta
 -- Per come sono stati inseriti gli indirizzi nei tag, ad un certo punto
 -- dell'esecuzione dobbiamo avere prima uno stato di IDLE e qualche passo
 -- più avanti una collisione.
 LTLSPEC
 F((r.state=idle) & X(X(X(X(X(X(r.state=collision)))))))
 
--- proprietà di liveness
+-- e. proprietà di liveness
 -- Tutte le volte che più tag inviano una richiesta al reader, quest'ultimo
 -- notifica una collisione.
 LTLSPEC
 G(((t1.state=transmit) & (t2.state=transmit) & (t3.state=transmit)) -> F(r.state=collision))
 
+-- f. proprietà di liveness
 -- Tutte le volte che un singolo tag invia una richiesta al reader, quest'ultimo
 -- notifica una single.
 LTLSPEC
 G(((t2.state=transmit) | (t4.state=transmit) | (t7.state=transmit)) -> F(r.state=single))
 
--- proprietà di fairness forte
+-- g. proprietà di fairness forte
 -- Se un tag è frequentemente in stato di receive, allora il reader proverà
 -- a trasmettere.
 LTLSPEC
@@ -276,7 +277,13 @@ ASSIGN
 
 
 
-    
+-- Esito proprietà
+
+--                 |  a  |  b  |  c  |  d  |  e  |  f  |  g  |   
+-- senza anomalie  |true |true |true |true |true |true |true |  
+-- anomalia 1      |false|true |false|false|true |false|true |  
+-- anomalia 2_t7   |true |true |true |true |true |true |true | 
+-- anomalia 2_t8   |true |true |true |true |true |true |true | 
 
 
 
