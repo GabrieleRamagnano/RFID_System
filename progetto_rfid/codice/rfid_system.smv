@@ -2,7 +2,7 @@
 
 -- Introduzione
 -- Tra i tree-based protocols proposti nella specifica si è scelto di implementare quello più basilare: 
--- Basic Tree Protocol. Nello specifico vengono adottate le seguenti soluzioni implementative:
+-- Basic Tree Protocol. Sono state adottate le seguenti soluzioni implementative:
 
 -- 1. La struttura dati utilizzata per rappresentare sia l'indirizzo della sonda inviata dal reader
 --    che i singoli indirizzi dei tag è unsigned word[.]. Ciò ha permesso, oltre ad una maggiore
