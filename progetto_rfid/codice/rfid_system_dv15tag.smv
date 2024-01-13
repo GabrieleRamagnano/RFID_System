@@ -1,0 +1,283 @@
+-- Progetto: Protocolli anti-collisione basati su alberi per tag RFID
+
+-- Introduzione
+-- Tra i tree-based protocols proposti nella specifica si è scelto di implementare quello più basilare: 
+-- Basic Tree Protocol. Nello specifico vengono adottate le seguenti soluzioni implementative:
+
+-- 1. La struttura dati utilizzata per rappresentare sia l'indirizzo della sonda inviata dal reader
+--    che i singoli indirizzi dei tag è unsigned word[.]. Ciò ha permesso, oltre ad una maggiore
+--    aderenza all'algoritmo originario, di poter manipolare più agevolmente un array di bit grazie 
+--    alle operazioni come count,shift e resize che il linguaggio mette a disposizione.
+
+-- 2. Il problema della "simmetria" dei tag è stato risolto adottando un approccio eslusivamente
+--    deterministico: ad ogni tag viene in partenza assegnato un indirizzo (si è scelta arbitrariamente
+--    una lunghezza massima di 8-bit) "scoprendo", ogni volta che si verifica una collisione, un bit alla 
+--    volta. Tale soluzione ha lo scopo di impegnare l'algoritmo di attraversamento dell'albero nella 
+--    maniera più esaustiva possibile. Con un approccio non-deterministico la complessità crescente non
+--    lo avrebbe permesso (in tempi accettabili).
+
+-- 3. Ogni tag riceve come paramentro in ingresso "height", un intero che specifica qual è la profondità 
+--    massima dell'albero che l'algoritmo di ricerca può raggiungere. Tale aggiunta è necessaria nello 
+--    sviluppo della soluzione deterministica al processo di randomizzazione dei tag. 
+
+
+MODULE main
+
+VAR
+ r  : reader(t1,t2,t3,t4,t5,t6,t7,t8,
+             t9,t10,t11,t12,t13,t14,t15);
+ t1 : tag(r,0ub8_0000_0001,5);
+ t2 : tag(r,0ub8_0000_0010,5);
+ t3 : tag(r,0ub8_0000_0011,5);
+ t4 : tag(r,0ub8_0001_0100,5);
+ t5 : tag(r,0ub8_0001_0101,5);
+ t6 : tag(r,0ub8_0001_1100,5);
+ t7 : tag(r,0ub8_0001_0011,5);
+ t8 : tag(r,0ub8_0001_1111,5);
+ t9 : tag(r,0ub8_0000_0000,5);
+ t10: tag(r,0ub8_0001_1000,5);
+ t11: tag(r,0ub8_0000_1101,5);
+ t12: tag(r,0ub8_0001_0000,5);
+ t13: tag(r,0ub8_0001_1110,5);
+ t14: tag(r,0ub8_0001_1010,5);
+ t15: tag(r,0ub8_0001_0111,5);
+
+
+-- Test anomalie
+
+-- 1. Ipotizziamo che per errore a due tag venga assegnato il medesimo 
+--    indirizzo. Come reagirà il sistema ?
+-- t12: tag(r,0ub8_0001_0000,5);
+-- t13: tag(r,0ub8_0001_0000,5);
+-- proprietà di raggiungibilità estesa
+-- In particolare, è possibile sempre raggiungere uno stato dove prima o
+-- o poi il sistema termina ?
+CTLSPEC
+AG(EF(r.state=end))
+
+
+-- a. proprietà di raggiungibilità
+-- Il reader e tutti i tag devono giungere allo stato di terminazione. 
+-- Utilizziamo tale proprietà per verificare che il sistema termini.
+CTLSPEC
+EF(t1.state=end & t2.state=end & t3.state=end & t4.state=end &
+   t5.state=end & t6.state=end & t7.state=end & t8.state=end & 
+   t9.state=end & t10.state=end & t11.state=end & t12.state=end & 
+   t13.state=end & t14.state=end & t15.state=end r.state=end)
+
+-- b. proprietà di irraggiungibilità
+-- Non deve accadere mai durante una situazione di collisione che uno 
+-- dei tag venga indivituato.
+LTLSPEC
+G(!((r.state=collision) & (t12.state=single)))
+
+-- c. proprietà di raggiungibilità condizionale
+-- Il reader deve terminare solo dopo che tutti tag siano stati indivituati.
+LTLSPEC
+(r.bit!=-1)U(X(X(X(X(r.state=end)))))  
+
+-- d. proprietà raggiungibilità composta
+-- Per come sono stati inseriti gli indirizzi nei tag, ad un certo punto
+-- dell'esecuzione dobbiamo avere prima uno stato di IDLE e qualche passo
+-- più avanti una collisione.
+LTLSPEC
+F((r.state=idle) & X(X(X(X(X(X(r.state=collision)))))))
+
+-- e. proprietà di liveness
+-- Tutte le volte che più tag inviano una richiesta al reader, quest'ultimo
+-- notifica una collisione.
+LTLSPEC
+G(((t11.state=transmit) & (t2.state=transmit) & (t13.state=transmit)) -> F(r.state=collision))
+
+-- f. proprietà di liveness
+-- Tutte le volte che un singolo tag invia una richiesta al reader, quest'ultimo
+-- notifica una single.
+LTLSPEC
+G(((t2.state=transmit) | (t4.state=transmit) | (t15.state=transmit)) -> F(r.state=single))
+
+-- g. proprietà di fairness forte
+-- Se un tag è frequentemente in stato di receive, allora il reader proverà
+-- a trasmettere.
+LTLSPEC
+G(F(t15.state=receive)) -> G(F(r.state=transmit))
+
+
+MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
+
+VAR
+ continue : boolean;          -- condizione per l'esecuzione del corpo del while
+ bit      : -1..8;            -- lunghezza dell'indirizzo della sonda
+ a        : unsigned word[1]; -- sonda a: lunghezza 1-bit
+ b        : unsigned word[2]; -- sonda b: lunghezza 2-bit
+ c        : unsigned word[3]; -- sonda c: lunghezza 3-bit
+ d        : unsigned word[4]; -- sonda d: lunghezza 4-bit
+ e        : unsigned word[5]; -- sonda e: lunghezza 5-bit
+ state    : {transmit,receive,idle,collision_bit,
+             collision,single_bit,single,end};  -- transmit     : viene inviata la sonda ai tag
+                                                -- receive      : si attende la risposta dei tag
+                                                -- idle         : nessuno dei tag ha inviato un segnale
+                                                -- collision_bit: si verifica una collisione (viene valutata la 
+                                                                  lunghezza dell'indirizzo per la prossima sonda)
+                                                -- collision    : ancora in stato di collisione (viene generato
+                                                                  l'indirizzo per la prossima sonda)
+                                                -- single_bit   : tag individuato (viene valutata la lunghezza 
+                                                                  dell'indirizzo per la prossima sonda)
+                                                -- single       : ancora in stato di single (viene generato
+                                                                  l'indirizzo per la prossima sonda)
+                                                -- end          : il processo reader termina
+
+
+
+-- verifica delle collisioni
+DEFINE 
+  k := count((t1.state=transmit),(t2.state=transmit),
+             (t3.state=transmit),(t4.state=transmit),
+             (t5.state=transmit),(t6.state=transmit),
+             (t7.state=transmit),(t8.state=transmit)); 
+
+ASSIGN
+
+    init(continue) := TRUE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+           TRUE : continue;
+        esac;
+
+    -- operazioni che effettuano il cambio di "valore" dell'indirizzo 
+    init(a) := 0ub1_0;
+    next(a) := 
+        case
+           (bit=1) & (state=collision)                     : 0ub1_0;
+           (bit=1) & (state=single) & (a=0ub1_0)           : 0ub1_1;
+           TRUE : a;
+        esac;
+    
+    init(b) := 0ub2_00;
+    next(b) := 
+        case
+           (bit=2) & (state=collision)                      : a :: 0ub1_0;
+           (bit=2) & (state=single) & (resize(b,1)=0ub1_0)  : resize(b >> 1,1) :: 0ub1_1;
+           TRUE : b;
+        esac;
+    
+    init(c) := 0ub3_000;
+    next(c) := 
+        case
+           (bit=3) & (state=collision)                     : b :: 0ub1_0;
+           (bit=3) & (state=single) & (resize(c,1)=0ub1_0) : resize(c >> 1,2) :: 0ub1_1;
+           TRUE : c;
+        esac;
+    
+
+    init(d) := 0ub4_0000;
+    next(d) := 
+        case
+           (bit=4) & (state=collision)                     : c :: 0ub1_0;
+           (bit=4) & (state=single) & (resize(d,1)=0ub1_0) : resize(d >> 1,3) :: 0ub1_1;
+           TRUE : d;
+        esac;
+
+    init(e) := 0ub5_00000;
+    next(e) := 
+        case
+           (bit=5) & (state=collision)                     : d :: 0ub1_0;
+           (bit=5) & (state=single) & (resize(e,1)=0ub1_0) : resize(e >> 1,4) :: 0ub1_1;
+           TRUE : e;
+        esac;
+
+    -- operazioni che effettuano il cambio di "dimensione" dell'indirizzo
+    init(bit) := 0;
+    next(bit) :=
+        case
+          -- collision: si aumenta la dimensione dell'indirizzo 
+          (state=collision_bit) & (bit=0)                       :  1;
+          (state=collision_bit) & (bit=1)                       :  2; 
+          (state=collision_bit) & (bit=2)                       :  3;
+          (state=collision_bit) & (bit=3)                       :  4;
+          (state=collision_bit) & (bit=4)                       :  5;
+        
+          -- single: ci si sposta sulla parte destra dell'albero. NOTA:
+          -- il ciclo while presente nella specifica viene "srotolato"
+          (t1.state=end) & (t2.state=end) & (t3.state=end) &
+          (t4.state=end) & (t5.state=end) & (t6.state=end) &
+          (t7.state=end) & (t8.state=end)                        : -1;
+          (state=single_bit) & (bit=1) & (a=0ub1_0)              :  1; 
+          (state=single_bit) & (bit=2) & (resize(b,1)=0ub1_1)    :  1; 
+          (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_11)   :  1;
+          (state=single_bit) & (bit=3) & (resize(c,2)=0ub2_01)   :  2;
+          (state=single_bit) & (bit=4) & (resize(d,3)=0ub3_111)  :  1; 
+          (state=single_bit) & (bit=4) & (resize(d,3)=0ub3_011)  :  2; 
+          (state=single_bit) & (bit=4) & (resize(d,2)=0ub2_01)   :  3; 
+          (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_1111) :  1; 
+          (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0111) :  2; 
+          (state=single_bit) & (bit=5) & (resize(e,3)=0ub3_011)  :  3; 
+          (state=single_bit) & (bit=5) & (resize(e,2)=0ub2_01)   :  4; 
+
+          TRUE : bit;
+        esac;
+
+
+    init(state) := transmit;
+    next(state) :=
+        case
+          (continue=TRUE) & (state=transmit)                     : receive;
+          (k=0) & (state=receive)                                : idle;
+          (k>=2) & (state=receive)                               : collision_bit;
+          ((k=1) & (state=receive)) | ((state=idle) & (bit!=-1)) : single_bit;
+          (state=collision_bit)                                  : collision;
+          (state=single_bit)                                     : single;
+          (bit=-1) & ((state=idle) | (state=single))             : end;
+          (state=idle) | (state=collision) | (state=single)      : transmit;
+          TRUE : state;
+        esac;
+
+
+MODULE tag(r,address,height)
+
+VAR
+ continue : boolean;  -- condizione per l'esecuzione del corpo del while
+ state    : {receive,transmit,collision,single,end}; -- transmit : viene inviata una risposta al reader
+                                                     -- receive  : si attende la sonda del reader
+                                                     -- collision: si è verificata una collisione
+                                                     -- single   : il tag è stato individuato
+                                                     -- end      : il processo tag termina
+ 
+ASSIGN
+
+    init(continue) := TRUE;
+    next(continue) := 
+        case
+           state=end : FALSE;
+           TRUE : continue;
+        esac;
+
+     
+    init(state) := receive;   
+    next(state) :=
+        case
+           (state=receive) & (r.state=transmit) & ((r.bit=0)      |                                                                           
+           ((r.bit=1) & (r.a=resize(address >> (height - 1), 1))) | 
+           ((r.bit=2) & (r.b=resize(address >> (height - 2), 2))) | 
+           ((r.bit=3) & (r.c=resize(address >> (height - 3), 3))) |
+           ((r.bit=4) & (r.d=resize(address >> (height - 4), 4))) |
+           ((r.bit=5) & (r.e=resize(address >> (height - height), 5)))) : transmit;
+           (r.state=collision_bit) & (state=transmit)                   : collision;
+           (r.state=single_bit) & (state=transmit)                      : single;
+           (state=collision)                                            : receive;
+           (state=single)                                               : end;
+           TRUE : state;
+        esac;
+
+
+
+-- Esito proprietà
+
+--                 |  a  |  b  |  c  |  d  |  e  |  f  |  g  |   
+-- senza anomalie  |true |true |true |true |true |true |true |   
+-- anomalia 2_t7   |true |true |true |true |true |true |true | 
+-- anomalia 2_t8   |true |true |true |true |true |true |true | 
+
+
+
+ 
