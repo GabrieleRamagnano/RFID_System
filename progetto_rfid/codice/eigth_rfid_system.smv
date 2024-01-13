@@ -274,10 +274,7 @@ ASSIGN
            TRUE : state;
         esac;
 
--- Conclusioni
--- Con qualche piccola modifica al codice ivi presentato si potrebbe ricavare una versione non-deterministica,
--- con l'aggiunta dunque di un ulteriore livello di astrazione. L'idea è stata presa in considerazione e il
--- codice è stato scritto: https://github.com/GabrieleRamagnano/RFID_system.git /branch: NonDeterministicVersion.
+
 
     
 
