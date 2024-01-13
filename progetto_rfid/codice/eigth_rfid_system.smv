@@ -149,7 +149,7 @@ ASSIGN
            TRUE : continue;
         esac;
 
-    -- operazioni che permettono il cambio di "valore" dell'indirizzo 
+    -- operazioni che effettuano il cambio di "valore" dell'indirizzo 
     init(a) := 0ub1_0;
     next(a) := 
         case
@@ -191,7 +191,7 @@ ASSIGN
            TRUE : e;
         esac;
 
-    -- operazioni che permettono il cambio di "dimensione" dell'indirizzo
+    -- operazioni che effettuano il cambio di "dimensione" dell'indirizzo
     init(bit) := 0;
     next(bit) :=
         case
