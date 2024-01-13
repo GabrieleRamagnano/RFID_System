@@ -14,11 +14,11 @@
 --    una lunghezza massima di 8-bit) "scoprendo", ogni volta che si verifica una collisione, un bit alla 
 --    volta. Tale soluzione ha lo scopo di impegnare l'algoritmo di attraversamento dell'albero nella 
 --    maniera più esaustiva possibile. Con un approccio non-deterministico la complessità crescente non
---    lo permetterebbe (in tempi accettabili).
+--    lo avrebbe permesso (in tempi accettabili).
 
--- 3. Ogni riceve come paramentro in ingresso "height", un intero che specifica qual è la profondità massima
---    dell'albero che l'algoritmo di ricerca può raggiungere. Tale aggiunta è necessaria nello sviluppo della
---    soluzione deterministica al processo di randomizzazione dei tag. 
+-- 3. Ogni tag riceve come paramentro in ingresso "height", un intero che specifica qual è la profondità 
+--    massima dell'albero che l'algoritmo di ricerca può raggiungere. Tale aggiunta è necessaria nello 
+--    sviluppo della soluzione deterministica al processo di randomizzazione dei tag. 
 
 
 MODULE main
@@ -110,18 +110,30 @@ G(F(t8.state=receive)) -> G(F(r.state=transmit))
 MODULE reader(t1,t2,t3,t4,t5,t6,t7,t8)
 
 VAR
- continue : boolean;
- bit      : -1..8;
- a        : unsigned word[1];
- b        : unsigned word[2];
- c        : unsigned word[3];
- d        : unsigned word[4];
- e        : unsigned word[5];
+ continue : boolean;          -- condizione per l'esecuzione del corpo del while
+ bit      : -1..8;            -- lunghezza dell'indirizzo della sonda
+ a        : unsigned word[1]; -- sonda a: lunghezza 1-bit
+ b        : unsigned word[2]; -- sonda b: lunghezza 2-bit
+ c        : unsigned word[3]; -- sonda c: lunghezza 3-bit
+ d        : unsigned word[4]; -- sonda d: lunghezza 4-bit
+ e        : unsigned word[5]; -- sonda e: lunghezza 5-bit
  state    : {transmit,receive,idle,collision_bit,
-             collision,single_bit,single,end};
+             collision,single_bit,single,end};  -- transmit     : viene inviata la sonda ai tag
+                                                -- receive      : si attende la risposta dei tag
+                                                -- idle         : nessuno dei tag ha inviato un segnale
+                                                -- collision_bit: si verifica una collisione (viene valutata la 
+                                                                  lunghezza dell'indirizzo per la prossima sonda)
+                                                -- collision    : ancora in stato di collisione (viene generato
+                                                                  l'indirizzo per la prossima sonda)
+                                                -- single_bit   : tag individuato (viene valutata la lunghezza 
+                                                                  dell'indirizzo per la prossima sonda)
+                                                -- single       : ancora in stato di single (viene generato
+                                                                  l'indirizzo per la prossima sonda)
+                                                -- end          : il processo reader termina
 
 
--- collision detection
+
+-- verifica delle collisioni
 DEFINE 
   k := count((t1.state=transmit),(t2.state=transmit),
              (t3.state=transmit),(t4.state=transmit),
@@ -137,6 +149,7 @@ ASSIGN
            TRUE : continue;
         esac;
 
+    -- operazioni che permettono il cambio di "valore" dell'indirizzo 
     init(a) := 0ub1_0;
     next(a) := 
         case
@@ -178,18 +191,19 @@ ASSIGN
            TRUE : e;
         esac;
 
-
+    -- operazioni che permettono il cambio di "dimensione" dell'indirizzo
     init(bit) := 0;
     next(bit) :=
         case
-          -- collision
+          -- collision: si aumenta la dimensione dell'indirizzo 
           (state=collision_bit) & (bit=0)                       :  1;
           (state=collision_bit) & (bit=1)                       :  2; 
           (state=collision_bit) & (bit=2)                       :  3;
           (state=collision_bit) & (bit=3)                       :  4;
           (state=collision_bit) & (bit=4)                       :  5;
         
-          -- single
+          -- single: ci si sposta sulla parte destra dell'albero. NOTA:
+          -- il ciclo while presente nella specifica viene "srotolato"
           (t1.state=end) & (t2.state=end) & (t3.state=end) &
           (t4.state=end) & (t5.state=end) & (t6.state=end) &
           (t7.state=end) & (t8.state=end)                        : -1;
@@ -204,7 +218,7 @@ ASSIGN
           (state=single_bit) & (bit=5) & (resize(e,4)=0ub4_0111) :  2; 
           (state=single_bit) & (bit=5) & (resize(e,3)=0ub3_011)  :  3; 
           (state=single_bit) & (bit=5) & (resize(e,2)=0ub2_01)   :  4; 
-    
+
           TRUE : bit;
         esac;
 
@@ -227,10 +241,13 @@ ASSIGN
 MODULE tag(r,address,height)
 
 VAR
- continue : boolean;
- state    : {receive,transmit,collision,single,end};
+ continue : boolean;  -- condizione per l'esecuzione del corpo del while
+ state    : {receive,transmit,collision,single,end}; -- transmit : viene inviata una risposta al reader
+                                                     -- receive  : si attende la sonda del reader
+                                                     -- collision: si è verificata una collisione
+                                                     -- single   : il tag è stato individuato
+                                                     -- end      : il processo tag termina
  
-
 ASSIGN
 
     init(continue) := TRUE;
@@ -257,7 +274,10 @@ ASSIGN
            TRUE : state;
         esac;
 
-
+-- Conclusioni
+-- Con qualche piccola modifica al codice ivi presentato si potrebbe ricavare una versione non-deterministica,
+-- con l'aggiunta dunque di un ulteriore livello di astrazione. L'idea è stata presa in considerazione e il
+-- codice è stato scritto: https://github.com/GabrieleRamagnano/RFID_system.git /branch: NonDeterministicVersion.
 
     
 
