@@ -18,7 +18,7 @@ contemporaneamente  i loro pacchetti risultano completamente sovrapposti. Quando
 
 - _Idle_ (I): se _k = 0_, cioè nessun tag risponde.
 - _Successful reception_ (S): se _k = 1_.
-- _Collision_ (C) : se _k >= 2_.
+- _Collision_ (C) : se $k >= 2$.
 
 ## Basic Tree Protocol
 
