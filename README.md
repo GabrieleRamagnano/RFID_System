@@ -39,13 +39,13 @@ Il model checker utilizzato è [NuSMV](https://nusmv.fbk.eu/) per il sistema ope
 
 ### Installazione
 
+Su un sistema operativo Linux per l’installazione di NuSMV è necessario eseguire la configurazione delle seguenti variabili d’ambiente:
+
 ```
 export PATH=${PATH}:NuSMV-2.6.0-Linux/bin
 
 export NUSMV_LIBRARY_PATH=NuSMV-2.6.0-Linux/share/nusmv/
 ```
-
-Su un sistema operativo Linux per l’installazione di NuSMV è necessario eseguire la configurazione delle seguenti variabili d’ambiente:
 
 ### Esempio di esecuzione e verifica delle proprietà del progetto RFID_System
 
