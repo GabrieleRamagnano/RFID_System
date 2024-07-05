@@ -53,7 +53,7 @@ In questo caso, la versione del software selezionata è NuSMV-2.6.0-Linux.
 1. Attiviamo la shell interattiva di NuSMV con il comando:
 
 ```
-system prompt> **NuSMV -int** <RET>
+system prompt> NuSMV -int 
 NuSMV>
 ```
 
