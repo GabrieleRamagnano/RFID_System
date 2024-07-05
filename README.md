@@ -14,11 +14,11 @@ A livello radio, assumiamo che se un tag si trova ad una certa distanza _d_ dal 
 
 <img src="image/slot.jpg" alt="Slot_probe" width="700" height="100">
 
-contemporaneamente  i loro pacchetti risultano completamente sovrapposti. Quando _k_ tag trasmettono nel medesimo slot, l’interrogatore percepisce il canale in quello slot nello stato di:
+contemporaneamente  i loro pacchetti risultano completamente sovrapposti. Quando $k$ tag trasmettono nel medesimo slot, l’interrogatore percepisce il canale in quello slot nello stato di:
 
-- _Idle_ (I): se _k = 0_, cioè nessun tag risponde.
-- _Successful reception_ (S): se _k = 1_.
-- _Collision_ (C) : se $k >= 2$.
+- _Idle_ (I): se $k = 0$, cioè nessun tag risponde.
+- _Successful reception_ (S): se $k = 1$.
+- _Collision_ (C) : se $k \geq 2$.
 
 ## Basic Tree Protocol
 
