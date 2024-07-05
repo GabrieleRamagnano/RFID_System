@@ -80,7 +80,7 @@ The diameter of the FSM is 74.
 NuSMV >
 ```
 
-5. Verifichiamo che siano soddisfatte tutte le proprietà ltl:
+5. Verifichiamo che siano soddisfatte tutte le proprietà LTL:
 
 ```
 NuSMV > check_ltlspec
