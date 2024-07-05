@@ -50,6 +50,50 @@ In questo caso, la versione del software selezionata è NuSMV-2.6.0-Linux.
 
 ### Esempio di esecuzione e verifica delle proprietà del progetto RFID_System
 
+1. Attiviamo la shell interattiva di NuSMV con il comando:
+
+```
+system prompt> **NuSMV -int** <RET>
+NuSMV>
+```
+
+2. Leggiamo il file in input .smv contenete il modello del sistema RFID:
+
+```
+NuSMV > read_model -i ProgettoLPVS.smv 
+NuSMV >
+```
+
+3. Inizializziamo il sistema per la verifica:
+
+```
+NuSMV > go
+NuSMV > 
+```
+
+4. Calcoliamo l'insieme di stati raggiungibili:
+
+```
+NuSMV > compute_reachable 
+The computation of reachable states has been completed.
+The diameter of the FSM is 74.
+NuSMV >
+```
+
+5. Verifichiamo che siano soddisfatte tutte le proprietà ltl:
+
+```
+NuSMV > check_ltlspec
+-- specification  G !(r.state = collision & t1.state = single)  is true
+-- specification (r.bit != -1 U ( X ( X ( X ( X r.state = end)))))  is true
+-- specification  F (r.state = idle &  X ( X ( X ( X ( X ( X r.state = collision))))))  is true
+-- specification  G (((t1.state = transmit & t2.state = transmit) & t3.state = transmit) ->  F r.state = collision)  is true
+-- specification  G (((t2.state = transmit | t4.state = transmit) | t7.state = transmit) ->  F r.state = single)  is true
+-- specification ( G ( F t8.state = receive) ->  G ( F r.state = transmit))  is true
+NuSMV > 
+```
+
+
 ## Conclusione
 
 Esistono svariate versioni di protocolli anticollisione basati su alberi. Quella sviluppata è la _Basic Tree Protocol_, che corrisponde alla versione più basilare. Per una trattazione più approfondita dell’argomento consiglio quindi la lettura del capitolo [Tree-Based Anti-Collision Protocols for RFID Tags](https://onlinelibrary.wiley.com/doi/abs/10.1002/9780470665251.ch8)  di Petar Popovski tratto dal libro [RFID Systems: Research Trends and Challenges](https://onlinelibrary.wiley.com/doi/book/10.1002/9780470665251), di cui sopra, allo scopo di illustrare al meglio l’argomento, ho presentato una breve sintesi.
