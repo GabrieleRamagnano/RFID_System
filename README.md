@@ -46,6 +46,7 @@ export PATH=${PATH}:NuSMV-2.6.0-Linux/bin
 
 export NUSMV_LIBRARY_PATH=NuSMV-2.6.0-Linux/share/nusmv/
 ```
+In questo caso, la versione del software selezionata è NuSMV-2.6.0-Linux.
 
 ### Esempio di esecuzione e verifica delle proprietà del progetto RFID_System
 
