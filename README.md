@@ -10,11 +10,11 @@ L’oggetto del progetto riguarda la risoluzione del problema della _collisione 
 
 ## Modello del sistema
 
-A livello radio, assumiamo che se un tag si trova ad una certa distanza _d_ dal lettore, può sempre ricevere sonde dal lettore senza errori. Viceversa, se un singolo tag nel raggio di azione di un lettore trasmette, il suo pacchetto viene ricevuto con successo dal lettore. Se due o più tag che si trovano nello stesso raggio di azione del lettore trasmettono simultaneamente, il lettore non riceve nessuno dei pacchetti. Come si osserva nel seguente diagramma, la durata del pacchetto inviato da ciascun tag è costante e
+A livello radio, assumiamo che se un tag si trova ad una certa distanza _d_ dal lettore, può sempre ricevere sonde dal lettore senza errori. Viceversa, se un singolo tag nel raggio di azione di un lettore trasmette, il suo pacchetto viene ricevuto con successo dal lettore. Se due o più tag che si trovano nello stesso raggio di azione del lettore trasmettono simultaneamente, il lettore non riceve nessuno dei pacchetti. Come si osserva nel seguente diagramma, la durata del pacchetto inviato da ciascun tag è costante e pari ad uno slot, per cui se due tag trasmettono contemporaneamente 
 
 <img src="image/slot.jpg" alt="Slot_probe" width="700" height="100">
 
-pari ad uno slot, per cui se due tag trasmettono contemporaneamente i loro pacchetti risultano completamente sovrapposti. Quando _k_ tag trasmettono nel medesimo slot, l’interrogatore percepisce il canale in quello slot nello stato di:
+i loro pacchetti risultano completamente sovrapposti. Quando _k_ tag trasmettono nel medesimo slot, l’interrogatore percepisce il canale in quello slot nello stato di:
 
 - _Idle_ (I): se _k = 0_, cioè nessun tag risponde.
 - _Successful reception_ (S): se _k = 1_.
