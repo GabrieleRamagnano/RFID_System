@@ -5,6 +5,7 @@
 
 I sistemi di identificazione a radiofrequenza (RFID) sono caratterizzati da due componenti principali: tag e lettori. Un tag è un piccolo microchip dotato di antenna che viene fissato all’oggetto o alla persona. I lettori, noti anche come _interrogatori_, sono ricettrasmettitori che possono comunicare con i tag, leggendo informazioni dei tag o scrivendo informazioni su di essi. <br>     
 La modalità di comunicazione nei sistemi RFID può essere descritta come segue: il lettore invia una sonda a una serie di tag all'interno della sua portata radio. In base al contenuto della sonda, un tag decide se inviare la propria risposta retrodiffondendo l'alimentazione fornita dal lettore. Se più tag dovessero rispondere alla sonda, allora al lettore arriveranno più risposte contemporaneamente, dando così luogo al problema della _collisione dei tag_. Ne risulta quindi che molto probabile che il segnale risulti danneggiato e illegibile dal lettore. Se invece il tag si trova nel raggio di azione di più di un lettore, può verificarsi una _collisione del lettore_ sul tag. <br> 
+
 L’oggetto del progetto riguarda la risoluzione del problema della _collisione dei tag_ tramite protocolli anticollisione. L’obiettivo di un protocollo anticollizione è quello di stabilire uno schema di trasmissione per i tag, in modo che alla fine ciascun tag riesca ad inviare una risposta positiva. Vi sono diversi tipi di protocolli aticollisione. Tra questi, la classe presa in considerazione è quella riguardante i protocolli chimati _algoritmi ad albero_.
 
 ## Modello del sistema
