@@ -29,7 +29,7 @@ Durante la fase di progettazione si è scelto di risolvere il problema della "si
 
 ## Model Checker: NuSMV
 
-Il model checker utilizzato è [NuSMV]((https://nusmv.fbk.eu/) per il sistema operativo Linux. Di seguito riporto i comandi (reperibili in maniera completa nel manuale) per l’installazione del software ed una verifica veloce delle proprietà del modello.
+Il model checker utilizzato è [NuSMV](https://nusmv.fbk.eu/) per il sistema operativo Linux. Di seguito riporto i comandi (reperibili in maniera completa nel manuale) per l’installazione del software ed una verifica veloce delle proprietà del modello.
 
 ### Installazione
 
